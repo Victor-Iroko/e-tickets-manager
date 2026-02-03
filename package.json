@@ -1,0 +1,72 @@
+{
+  "name": "e-tickets-manager",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev --dotenv .env.local",
+    "dev:all": "concurrently --names \"NUXT,CONVEX\" -c \"cyan,magenta\" \"bun run dev\" \"bunx convex dev\"",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "prepare": "husky",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "test:coverage": "vitest --coverage",
+    "test:unit": "vitest --project unit",
+    "test:nuxt": "vitest --project nuxt",
+    "test:e2e": "vitest --project e2e",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --check .",
+    "format:fix": "prettier --write ."
+  },
+  "lint-staged": {
+    "*.{js,ts,vue}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{css,json,md}": [
+      "prettier --write"
+    ]
+  },
+  "dependencies": {
+    "@convex-dev/better-auth": "^0.10.10",
+    "@nuxt/a11y": "1.0.0-alpha.1",
+    "@nuxt/eslint": "1.13.0",
+    "@nuxt/hints": "1.0.0-alpha.6",
+    "@nuxt/image": "2.0.0",
+    "@nuxt/test-utils": "3.23.0",
+    "@nuxt/ui": "4.4.0",
+    "@nuxtjs/seo": "3.4.0",
+    "@pinia/nuxt": "^0.11.3",
+    "@vueuse/core": "^14.2.0",
+    "@vueuse/motion": "^3.0.3",
+    "@vueuse/nuxt": "^14.2.0",
+    "better-auth": "1.4.9",
+    "convex": "^1.31.7",
+    "eslint": "^9.0.0",
+    "nuxt": "^4.3.0",
+    "nuxt-convex": "^0.0.6",
+    "nuxt-security": "2.5.1",
+    "pinia": "^3.0.4",
+    "pinia-plugin-unstorage": "^0.2.1",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5.6.3",
+    "vue": "^3.5.27",
+    "vue-router": "^4.6.4"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^20.4.1",
+    "@commitlint/config-conventional": "^20.4.1",
+    "@vitest/coverage-v8": "^4.0.18",
+    "@vue/test-utils": "^2.4.6",
+    "concurrently": "^9.2.1",
+    "happy-dom": "^20.5.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
+    "prettier": "^3.8.1",
+    "prettier-plugin-tailwindcss": "^0.7.2",
+    "vitest": "^4.0.18"
+  }
+}
