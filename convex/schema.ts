@@ -1,11 +1,3 @@
-import { defineSchema, defineTable } from 'convex/server'
-import { v } from 'convex/values'
+import { defineSchema } from 'convex/server'
 
-export default defineSchema({
-  users: defineTable({
-    email: v.optional(v.string()),
-    name: v.optional(v.string()),
-    image: v.optional(v.string()),
-    emailVerified: v.optional(v.boolean())
-  }).index('by_email', ['email'])
-})
+export default defineSchema({})

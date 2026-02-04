@@ -11,7 +11,6 @@ export default defineNuxtConfig({
     '@nuxt/test-utils',
     '@nuxt/ui',
     '@pinia/nuxt',
-    'pinia-plugin-unstorage/nuxt',
     '@vueuse/nuxt',
     '@nuxtjs/seo',
     'nuxt-security',
@@ -20,16 +19,7 @@ export default defineNuxtConfig({
   ],
 
   runtimeConfig: {
-    // Server-only keys (not exposed to client)
-    betterAuthSecret: process.env.NUXT_BETTER_AUTH_SECRET,
-    googleClientId: process.env.NUXT_GOOGLE_CLIENT_ID,
-    googleClientSecret: process.env.NUXT_GOOGLE_CLIENT_SECRET,
-
-    // Public keys (exposed to client)
-    public: {
-      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000',
-      convexUrl: process.env.NUXT_PUBLIC_CONVEX_URL
-    }
+    convexSiteUrl: process.env.CONVEX_SITE_URL
   },
 
   // Configure security module to allow auth endpoints

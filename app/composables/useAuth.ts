@@ -1,75 +1,77 @@
-import { authClient } from '~/utils/auth-client'
-
-/**
- * SSR-compatible auth composable.
- * Uses useFetch wrapper to ensure cookies are forwarded correctly during SSR.
- */
 export function useAuth() {
-  const session = authClient.useSession()
-
-  const user = computed(() => session.value.data?.user ?? null)
-  const isAuthenticated = computed(
-    () => !!session.value.data && !session.value.isPending
-  )
-  const isLoading = computed(() => session.value.isPending)
-
-  async function signInWithEmail(email: string, password: string) {
-    return authClient.signIn.email({
-      email,
-      password
-    })
-  }
+  const isLoading = useState<boolean>('auth-loading', () => false)
+  const toast = useToast()
 
   async function signUpWithEmail(
     email: string,
     password: string,
-    name?: string
-  ) {
-    return authClient.signUp.email({
-      email,
-      password,
-      name: name ?? email.split('@')[0] ?? 'User'
-    })
+    name: string
+  ): Promise<boolean> {
+    isLoading.value = true
+    try {
+      await authClient.signUp.email({ email, password, name })
+      return true
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Sign up failed'
+      toast.add({
+        title: 'Sign up failed',
+        description: message,
+        color: 'error'
+      })
+      return false
+    } finally {
+      isLoading.value = false
+    }
   }
 
-  async function signInWithGoogle() {
-    return authClient.signIn.social({
-      provider: 'google',
-      callbackURL: '/'
-    })
+  async function signInWithEmail(
+    email: string,
+    password: string
+  ): Promise<boolean> {
+    isLoading.value = true
+    try {
+      await authClient.signIn.email({ email, password })
+      return true
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Sign in failed'
+      toast.add({
+        title: 'Sign in failed',
+        description: message,
+        color: 'error'
+      })
+      return false
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  async function signInWithGoogle(): Promise<void> {
+    isLoading.value = true
+    try {
+      await authClient.signIn.social({
+        provider: 'google',
+        callbackURL: '/'
+      })
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Sign in failed'
+      toast.add({
+        title: 'Sign in failed',
+        description: message,
+        color: 'error'
+      })
+      isLoading.value = false
+    }
   }
 
   async function signOut() {
-    return authClient.signOut()
+    await authClient.signOut()
   }
 
   return {
-    session,
-    user,
-    isAuthenticated,
-    isLoading,
-    signInWithEmail,
+    isLoading: readonly(isLoading),
     signUpWithEmail,
+    signInWithEmail,
     signInWithGoogle,
     signOut
   }
-}
-
-/**
- * SSR-compatible session fetching using useFetch.
- * Use this in middleware or when you need SSR-compatible session data.
- */
-export async function useAuthSession() {
-  // Custom useFetch wrapper that handles relative URLs for SSR cookie forwarding
-  const relativeFetch = ((url: string, opts?: Record<string, unknown>) => {
-    let processedUrl = url
-    try {
-      if (url.startsWith('http')) processedUrl = new URL(url).pathname
-    } catch {
-      // Keep original URL if parsing fails
-    }
-    return useFetch(processedUrl, opts)
-  }) as typeof useFetch
-
-  return await authClient.useSession(relativeFetch)
 }
