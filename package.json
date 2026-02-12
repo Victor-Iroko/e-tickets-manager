@@ -46,6 +46,7 @@
     "better-auth": "1.4.9",
     "convex": "^1.31.7",
     "eslint": "^9.0.0",
+    "nodemailer": "^8.0.0",
     "nuxt": "^4.3.0",
     "nuxt-convex": "^0.0.6",
     "nuxt-security": "2.5.1",
@@ -58,6 +59,7 @@
   "devDependencies": {
     "@commitlint/cli": "^20.4.1",
     "@commitlint/config-conventional": "^20.4.1",
+    "@types/nodemailer": "^7.0.9",
     "@vitest/coverage-v8": "^4.0.18",
     "@vue/test-utils": "^2.4.6",
     "concurrently": "^9.2.1",

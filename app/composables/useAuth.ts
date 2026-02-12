@@ -63,8 +63,58 @@ export function useAuth() {
     }
   }
 
-  async function signOut() {
+  async function signOut(): Promise<void> {
     await authClient.signOut()
+  }
+
+  async function forgotPassword(
+    email: string,
+    redirectTo?: string
+  ): Promise<boolean> {
+    isLoading.value = true
+    try {
+      await authClient.requestPasswordReset({
+        email,
+        redirectTo: redirectTo || '/reset-password'
+      })
+      return true
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Failed to send reset email'
+      toast.add({
+        title: 'Error',
+        description: message,
+        color: 'error'
+      })
+      return false
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  async function resetPassword(
+    token: string,
+    newPassword: string
+  ): Promise<boolean> {
+    isLoading.value = true
+    try {
+      await authClient.resetPassword({
+        token,
+        newPassword
+      })
+      return true
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Failed to reset password'
+      toast.add({
+        title: 'Error',
+        description: message,
+        color: 'error'
+      })
+      return false
+    } finally {
+      isLoading.value = false
+    }
   }
 
   return {
@@ -72,6 +122,8 @@ export function useAuth() {
     signUpWithEmail,
     signInWithEmail,
     signInWithGoogle,
-    signOut
+    signOut,
+    forgotPassword,
+    resetPassword
   }
 }

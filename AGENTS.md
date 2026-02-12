@@ -2,6 +2,8 @@
 
 Guidelines for AI agents working on this Nuxt 4 + Convex e-tickets application.
 
+Details about the project can be found in [Plan.md](./PLAN.md).
+
 ## Technology Stack
 
 - **Framework**: Nuxt 4 with Vue 3 Composition API
@@ -204,3 +206,7 @@ Copy `.env.example` to `.env.local`. Key variables:
 - `NUXT_GOOGLE_CLIENT_ID/SECRET` - OAuth credentials
 
 Set Convex env vars: `bunx convex env set VAR_NAME value`
+
+## Design System
+
+Make the designs responsive, professional, add support for light and dark mode and use nuxt ui components whereever possible (if you aren't sure of what component to use, use the nuxt ui mcp or any of the docs or web search tools) and add animations and transitions to make it look nice.
