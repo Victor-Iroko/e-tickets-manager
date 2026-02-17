@@ -9,7 +9,12 @@
  */
 
 import type * as auth from "../auth.js";
+import type * as email from "../email.js";
+import type * as eventRoles from "../eventRoles.js";
+import type * as events from "../events.js";
 import type * as http from "../http.js";
+import type * as lib_auth from "../lib/auth.js";
+import type * as ticketTypes from "../ticketTypes.js";
 
 import type {
   ApiFromModules,
@@ -19,7 +24,12 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  email: typeof email;
+  eventRoles: typeof eventRoles;
+  events: typeof events;
   http: typeof http;
+  "lib/auth": typeof lib_auth;
+  ticketTypes: typeof ticketTypes;
 }>;
 
 /**

@@ -1,6 +1,8 @@
 export function useAuth() {
   const isLoading = useState<boolean>('auth-loading', () => false)
   const toast = useToast()
+  const route = useRoute()
+  const redirect = (route.query.redirect as string) || '/dashboard'
 
   async function signUpWithEmail(
     email: string,
@@ -10,6 +12,7 @@ export function useAuth() {
     isLoading.value = true
     try {
       await authClient.signUp.email({ email, password, name })
+      await navigateTo(redirect)
       return true
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Sign up failed'
@@ -31,6 +34,7 @@ export function useAuth() {
     isLoading.value = true
     try {
       await authClient.signIn.email({ email, password })
+      await navigateTo(redirect)
       return true
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Sign in failed'
@@ -50,7 +54,7 @@ export function useAuth() {
     try {
       await authClient.signIn.social({
         provider: 'google',
-        callbackURL: '/'
+        callbackURL: redirect
       })
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Sign in failed'
@@ -65,6 +69,7 @@ export function useAuth() {
 
   async function signOut(): Promise<void> {
     await authClient.signOut()
+    await navigateTo('/login')
   }
 
   async function forgotPassword(
