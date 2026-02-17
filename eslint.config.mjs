@@ -9,5 +9,16 @@ export default withNuxt(
     rules: {
       'no-console': 'warn'
     }
+  },
+  {
+    files: ['convex/**/*.ts'],
+    languageOptions: {
+      parserOptions: {
+        project: './convex/tsconfig.json'
+      }
+    },
+    rules: {
+      '@typescript-eslint/no-floating-promises': 'error'
+    }
   }
 )
