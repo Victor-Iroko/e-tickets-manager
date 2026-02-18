@@ -14,12 +14,14 @@ export default defineNuxtConfig({
     '@vueuse/nuxt',
     '@nuxtjs/seo',
     'nuxt-security',
-    '@vueuse/motion/nuxt',
-    'nuxt-convex'
+    '@vueuse/motion/nuxt'
   ],
 
   runtimeConfig: {
-    convexSiteUrl: process.env.CONVEX_SITE_URL
+    convexSiteUrl: process.env.CONVEX_SITE_URL,
+    public: {
+      convexUrl: process.env.NUXT_PUBLIC_CONVEX_URL || process.env.CONVEX_URL
+    }
   },
 
   // Configure security module to allow auth endpoints

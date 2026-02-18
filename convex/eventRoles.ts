@@ -1,5 +1,5 @@
 import { v } from 'convex/values'
-import { internalQuery, query } from './_generated/server'
+import { query } from './_generated/server'
 import { authComponent } from './auth'
 
 export const listUserEventAssociations = query({
@@ -54,20 +54,24 @@ export const listUserEventAssociations = query({
   }
 })
 
-export const internalCheckRole = internalQuery({
+export const checkRole = query({
   args: {
-    userId: v.id('user'),
     eventId: v.id('events'),
     requiredRole: v.union(v.literal('planner'), v.literal('scanner'))
   },
   returns: v.object({
     hasRole: v.boolean()
   }),
-  handler: async (ctx, { userId, eventId, requiredRole }) => {
+  handler: async (ctx, { eventId, requiredRole }) => {
+    const user = await authComponent.safeGetAuthUser(ctx)
+    if (!user) {
+      return { hasRole: false }
+    }
+
     const association = await ctx.db
       .query('eventRoles')
       .withIndex('by_user_event', (q) =>
-        q.eq('userId', userId).eq('eventId', eventId)
+        q.eq('userId', user._id).eq('eventId', eventId)
       )
       .unique()
 

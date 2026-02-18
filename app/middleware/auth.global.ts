@@ -1,3 +1,5 @@
+import type { Id } from '~~/convex/_generated/dataModel'
+
 export default defineNuxtRouteMiddleware(async (to) => {
   if (to.meta.auth === false) {
     return
@@ -17,22 +19,18 @@ export default defineNuxtRouteMiddleware(async (to) => {
     return
   }
 
-  const eventId =
-    (to.params.eventId as string) ?? (to.params.id as string) ?? null
+  const eventId = ((to.params.eventId as string) ??
+    (to.params.id as string) ??
+    null) as Id<'events'> | null
 
   if (!eventId) {
     return navigateTo('/forbidden')
   }
 
-  const cookieHeaders = useRequestHeaders(['cookie'])
-
   try {
-    const result = await $fetch<{ hasRole: boolean }>('/api/check-role', {
-      query: { eventId, role: requiredRole },
-      headers: cookieHeaders
-    })
+    const hasRole = await checkRole(eventId, requiredRole)
 
-    if (!result.hasRole) {
+    if (!hasRole) {
       return navigateTo('/forbidden')
     }
   } catch {

@@ -1,253 +1,155 @@
 # Agent Development Guide
 
-Guidelines for AI agents working on this Nuxt 4 + Convex e-tickets application.
+Guidelines for agentic coding assistants working in this Nuxt 4 + Convex repository.
 
-## Technology Stack
+## Scope
 
-- **Framework**: Nuxt 4 with Vue 3 Composition API
-- **Database**: Convex (serverless backend)
-- **Auth**: Better-auth with Convex adapter
-- **UI**: Nuxt UI 4 with TailwindCSS 4
-- **State**: Pinia + VueUse composables
-- **Validation**: Zod (use `zod/mini` for frontend schemas)
-- **Testing**: Vitest with @nuxt/test-utils
+- Treat this file as the repo-level source of truth for build/test/style behavior.
+- Preserve architecture and conventions unless the task explicitly asks for refactoring.
+- Never edit generated files: `.nuxt/`, `.output/`, `convex/_generated/`.
 
-## Commands
+## Rule Files Discovered
+
+- Cursor rules: no `.cursorrules` and no `.cursor/rules/` directory found.
+- Copilot rules: no `.github/copilot-instructions.md` found.
+- Additional instruction file exists: `.github/instructions/convex.instructions.md`.
+- When editing Convex TS/JS files, follow both this guide and that Convex instruction file.
+
+## Build, Lint, and Test Commands
 
 ```bash
-# Development
-bun install                    # Install dependencies
-bun run dev:all                # Run Nuxt + Convex together
-bun run dev                    # Run Nuxt only
-bun run build                  # Production build (long running, avoid in dev)
+# Setup
+bun install
 
-# Linting & Formatting (run after making changes)
-bun run lint:fix               # ESLint with auto-fix
-bun run format:fix             # Prettier with auto-fix
+# Dev
+bun run dev         # Nuxt only (uses .env.local)
+bun run dev:all     # Nuxt + Convex
 
-# Testing
-bun run test                   # Run all tests
-bun run test:unit              # Unit tests only (test/unit/)
-bun run test:nuxt              # Component tests only (test/nuxt/)
-bun run test:e2e               # E2E tests only (test/e2e/)
-bun run test:watch             # Watch mode
-bunx vitest run test/unit/example.test.ts           # Single test file
-bunx vitest run -t "test name"                      # Single test by name
-bunx vitest run test/unit/example.test.ts -t "name" # Both filters
+# Build / preview
+bun run build (never run build by yourself, it takes to much time)
+bun run preview
+
+# Lint / format
+bun run lint
+bun run lint:fix
+bun run format
+bun run format:fix
+
+# Tests
+bun run test
+bun run test:watch
+bun run test:coverage
+bun run test:unit
+bun run test:nuxt
+bun run test:e2e
 ```
 
-## Code Style
+## Single-Test Commands (Important)
 
-### Formatting (Prettier)
+Vitest uses named projects (`unit`, `nuxt`, `e2e`). Prefer `bunx vitest` for precise targeting.
 
-- No semicolons, single quotes, no trailing commas
-- TailwindCSS class sorting via `prettier-plugin-tailwindcss`
-- ESLint: `no-console` set to warn
+```bash
+# Single file in a specific project
+bunx vitest run --project unit test/unit/example.test.ts
+bunx vitest run --project nuxt test/nuxt/example.test.ts
+bunx vitest run --project e2e test/e2e/example.test.ts
+
+# Single test name
+bunx vitest run --project unit -t "creates event"
+
+# Single file + single test name
+bunx vitest run --project unit test/unit/example.test.ts -t "creates event"
+```
+
+- If tests do not exist yet, create them under `test/unit/`, `test/nuxt/`, or `test/e2e/`.
+- CI workflow runs `lint`, `format`, `build`, and `test` on PRs/pushes to `main`.
+
+## Code Style Guidelines
+
+### Formatting and Linting
+
+- Prettier config: `semi: false`, `singleQuote: true`, `trailingComma: none`.
+- `prettier-plugin-tailwindcss` is enabled; let it sort classes automatically.
+- ESLint includes `no-console: warn`.
+- Convex files enforce `@typescript-eslint/no-floating-promises: error`.
+- After non-trivial edits, run: `bun run lint:fix && bun run format:fix`.
+
+### Imports and Auto-Imports
+
+- Nuxt/Vue composables are auto-imported; do not manually import by default.
+- Common auto-imports: `ref`, `reactive`, `computed`, `watch`, `useRoute`, `navigateTo`, `useToast`.
+- Manually import external libraries and local modules outside auto-import boundaries.
+- Prefer named imports for tree-shaking.
+- For frontend validation, import `z` from `zod/mini`.
 
 ### TypeScript
 
-- Strict mode enabled
-- Explicit types for function parameters
-- Prefer type inference for local variables
-- Use `as const` for literal types
-- Export types alongside schemas: `export type LoginSchema = z.infer<typeof loginSchema>`
-
-### Imports
-
-- Vue composables and Nuxt utilities are auto-imported (no explicit import needed)
-- Auto-imported: `ref`, `reactive`, `computed`, `watch`, `useRoute`, `navigateTo`, `useToast`, etc.
-- Manual imports needed for: external libraries, local utilities not in `app/utils/`
-- Import `z` from `zod/mini` for validation schemas (frontend)
-- Import in a way that enables tree-shaking: `import { functionName } from 'library'`
+- Keep strict typing patterns across app and Convex code.
+- Add explicit types for function parameters and exported/public function returns.
+- Prefer inference for obvious local variables.
+- Use `as const` for discriminated literals.
+- Keep schema and type exports together, e.g. `export type LoginSchema = z.infer<typeof loginSchema>`.
 
 ### Naming Conventions
 
-| Element          | Convention        | Example                  |
-| ---------------- | ----------------- | ------------------------ |
-| Components       | PascalCase        | `UserProfile.vue`        |
-| Composables      | camelCase, use-   | `useAuth.ts`             |
-| Utilities        | kebab-case        | `auth-client.ts`         |
-| Pages            | kebab-case        | `reset-password.vue`     |
-| Middleware       | camelCase         | `auth.global.ts`         |
-| Convex functions | camelCase         | `createEvent`, `getUser` |
-| Constants        | UPPER_SNAKE_CASE  | `MAX_TICKET_QUANTITY`    |
-| Schema types     | PascalCase+Schema | `LoginSchema`            |
+| Element          | Convention                  | Example                  |
+| ---------------- | --------------------------- | ------------------------ |
+| Components       | PascalCase                  | `UserProfile.vue`        |
+| Composables      | camelCase with `use` prefix | `useAuth.ts`             |
+| Utilities        | kebab-case                  | `auth-client.ts`         |
+| Pages            | kebab-case                  | `reset-password.vue`     |
+| Middleware       | camelCase                   | `auth.global.ts`         |
+| Convex functions | camelCase                   | `createEvent`, `getUser` |
+| Constants        | UPPER_SNAKE_CASE            | `MAX_TICKET_QUANTITY`    |
+| Schema types     | PascalCase + `Schema`       | `LoginSchema`            |
 
-### Vue Components
+### Nuxt/Vue Patterns
 
-```vue
-<script setup lang="ts">
-// 1. Page meta (if page)
-definePageMeta({ auth: false })
-
-// 2. Composables (auto-imported, no imports needed)
-const { user, signOut } = useAuth()
-const toast = useToast()
-const route = useRoute()
-
-// 3. Reactive state
-const form = reactive({ email: '', password: '' })
-const error = ref<string | null>(null)
-const isSubmitting = ref(false)
-
-// 4. Computed
-const isValid = computed(() => form.email && form.password)
-
-// 5. Functions
-async function handleSubmit() {
-  isSubmitting.value = true
-  try {
-    await submitForm(form)
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'Submit failed'
-    toast.add({ title: 'Error', description: message, color: 'error' })
-  } finally {
-    isSubmitting.value = false
-  }
-}
-</script>
-
-<template>
-  <!-- Use Nuxt UI: UButton, UCard, UInput, UForm, etc. -->
-</template>
-```
-
-### Composables
-
-- Place in `app/composables/` for auto-import
-- Export named functions (not default), prefix with `use`
-- Return `readonly()` for read-only state to prevent external mutation
-- Use `useState()` for shared state across components
-
-```typescript
-export function useFeature() {
-  const isLoading = useState<boolean>('feature-loading', () => false)
-  const toast = useToast()
-
-  async function doSomething(): Promise<boolean> {
-    isLoading.value = true
-    try {
-      await apiCall()
-      return true
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed'
-      toast.add({ title: 'Error', description: message, color: 'error' })
-      return false
-    } finally {
-      isLoading.value = false
-    }
-  }
-
-  return { isLoading: readonly(isLoading), doSomething }
-}
-```
+- Use `<script setup lang="ts">`.
+- For pages, define `definePageMeta` near the top.
+- Existing route meta keys: `auth?: boolean`, `requiredRole?: 'planner' | 'scanner'`.
+- Keep composables in `app/composables/` and export named functions only.
+- Return `readonly(state)` from composables when exposing read-only state.
+- Use `useState()` for shared cross-component client state.
 
 ### Error Handling
 
-- Always wrap async operations in try/catch
-- Extract error message: `error instanceof Error ? error.message : 'Default message'`
-- Use `useToast()` for user-facing errors: `toast.add({ title, description, color: 'error' })`
-- Return `false` from composables on failure, `true` on success
+- Wrap async operations in `try/catch`.
+- Normalize error text via `error instanceof Error ? error.message : 'Default message'`.
+- Use Nuxt UI toast for user-visible failures: `toast.add({ title, description, color: 'error' })`.
+- In user-action composables, return `boolean` success where practical.
 
-### Validation with Zod
+## Convex Rules
 
-```typescript
-import { z } from 'zod/mini'
+- Use current Convex object syntax: `query`, `mutation`, `action` (and internal variants).
+- Include both `args` and `returns` validators in every Convex function.
+- If no value is returned, use `returns: v.null()` and explicitly `return null`.
+- Use `internalQuery/internalMutation/internalAction` for internal-only behavior.
+- Keep schema in `convex/schema.ts`; add indexes for query paths.
+- Prefer `withIndex` queries; avoid `filter` scans when index-based query is possible.
+- Do not edit `convex/_generated/`.
 
-export const loginSchema = z.object({
-  email: z.string().check(z.email('Please enter a valid email address')),
-  password: z
-    .string()
-    .check(z.minLength(8, 'Password must be at least 8 characters'))
-})
+## UI and Design System Rules (Nuxt UI First)
 
-export type LoginSchema = z.infer<typeof loginSchema>
-```
+When designing or updating UI, follow Nuxt UI design conventions in this repo.
 
-### Middleware
+- Prefer Nuxt UI components (`UButton`, `UCard`, `UForm`, `UInput`, etc.) over raw HTML where equivalents exist.
+- Use semantic Nuxt UI colors/tokens (`primary`, `secondary`, `success`, `warning`, `error`, `neutral`).
+- Prefer theme colors from `app/app.config.ts`: `primary: indigo`, `secondary: emerald`, `neutral: stone`.
+- Avoid hardcoded Tailwind palette classes for semantic UI states (for example `text-blue-500`, `bg-red-600`) when Nuxt UI color props/tokens fit.
+- Prefer Nuxt UI surface/text utility tokens (muted, toned, elevated) for consistency.
+- Keep layouts responsive and accessible; preserve keyboard/focus behavior from Nuxt UI components.
 
-```typescript
-export default defineNuxtRouteMiddleware(async (to) => {
-  if (to.meta.auth === false) return
+## Git and Commit Hygiene
 
-  const { session } = await useSession()
-  if (!session.value) {
-    return navigateTo({ path: '/login', query: { redirect: to.fullPath } })
-  }
-})
-```
-
-### Convex Functions
-
-- Schema in `convex/schema.ts` with `defineSchema` and `defineTable`
-- Use `v` validators from `convex/values`
-- Add indexes for frequently queried fields
-- Never edit `convex/_generated/` (auto-generated)
-
-```typescript
-import { defineSchema, defineTable } from 'convex/server'
-import { v } from 'convex/values'
-
-export default defineSchema({
-  events: defineTable({
-    name: v.string(),
-    date: v.number(),
-    status: v.union(v.literal('draft'), v.literal('published'))
-  })
-    .index('by_status', ['status'])
-    .index('by_created_by', ['createdBy'])
-})
-```
-
-## Project Structure
-
-```
-app/
-├── components/       # Vue components (auto-imported)
-├── composables/      # Composables (auto-imported)
-├── layouts/          # Page layouts
-├── middleware/       # Route middleware (auto-imported)
-├── pages/            # File-based routing
-├── utils/            # Utility functions (auto-imported)
-└── assets/css/       # TailwindCSS styles
-convex/
-├── _generated/       # Auto-generated (DO NOT EDIT)
-├── schema.ts         # Database schema
-├── auth.ts           # Auth configuration
-├── auth.config.ts    # Auth user fields
-└── http.ts           # HTTP routes
-test/
-├── unit/             # Unit tests (Node environment)
-├── nuxt/             # Component tests (Nuxt environment)
-└── e2e/              # E2E tests (Node environment)
-```
-
-## Commit Messages
-
-Uses Conventional Commits: `type(scope): description`
-
-```
-feat(auth): add Google OAuth login
-fix(tickets): correct inventory calculation
-test(events): add unit tests for event creation
-```
-
-Types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
+- Commit style: Conventional Commits (`feat(scope): description`, `fix(scope): description`, etc.).
+- Husky hooks are enabled:
+  - pre-commit: `bunx lint-staged`
+  - commit-msg: `commitlint` with `@commitlint/config-conventional`
+- Before finishing substantial work, run `bun run lint`, `bun run format`, and `bun run test`.
 
 ## Environment Variables
 
-Copy `.env.example` to `.env.local`. Key variables:
-
-- `CONVEX_DEPLOYMENT` - Convex deployment ID
-- `CONVEX_URL` - Convex API URL
-- `CONVEX_SITE_URL` - Convex site URL
-
-Set Convex env vars via: `bunx convex env set VAR_NAME value`
-
-## Design Guidelines
-
-- Make designs responsive and professional
-- Support light and dark mode
-- Use Nuxt UI components (UButton, UCard, UInput, UForm, etc.)
-- Add animations and transitions for polish
-- Follow accessibility best practices (@nuxt/a11y enabled)
+- Start from `.env.example` to create `.env.local`.
+- Key runtime variables: `CONVEX_DEPLOYMENT`, `CONVEX_URL`, `CONVEX_SITE_URL`.
+- Set Convex env vars with `bunx convex env set VAR_NAME value`.
