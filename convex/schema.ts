@@ -15,7 +15,7 @@ export default defineSchema({
       v.literal('completed')
     ),
     paymentAccountId: v.optional(v.string()),
-    createdBy: v.id('users'),
+    createdBy: v.id('user'),
     createdAt: v.number()
   })
     .index('by_created_by', ['createdBy'])
@@ -23,7 +23,7 @@ export default defineSchema({
 
   eventRoles: defineTable({
     eventId: v.id('events'),
-    userId: v.id('users'),
+    userId: v.id('user'),
     role: v.union(v.literal('planner'), v.literal('scanner'))
   })
     .index('by_user', ['userId'])
@@ -76,7 +76,7 @@ export default defineSchema({
       v.literal('refunded')
     ),
     checkedInAt: v.optional(v.number()),
-    checkedInBy: v.optional(v.id('users')),
+    checkedInBy: v.optional(v.id('user')),
     formData: v.optional(v.string()),
     createdAt: v.number()
   })

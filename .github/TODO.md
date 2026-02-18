@@ -1,271 +1,398 @@
-# E-Tickets Manager TODO Plan
+# E-Tickets Manager Implementation Plan (MVP First)
 
 Last updated: 2026-02-17
 
-## Legend
+## How to use this plan
 
 - Status: `[ ]` not started, `[~]` in progress, `[x]` done, `[-]` blocked
-- Priority: `P0` critical for MVP, `P1` important, `P2` post-MVP polish
-
-## 0) Current Baseline Snapshot (from repository)
-
-- [x] `P0` Nuxt 4 + Convex project scaffold
-- [x] `P0` Better Auth integration (email/password + Google OAuth)
-- [x] `P0` Auth middleware + auth composables scaffold
-- [x] `P0` Core Convex schema created (`events`, `eventRoles`, `ticketTypes`, `purchases`, `tickets`, `formFields`, `formResponses`)
-- [x] `P1` Password reset email action scaffold (SMTP/mock fallback)
-- [x] `P1` CI workflow with lint/format/build/test stages
+- Priority: `P0` required for MVP launch, `P1` important after MVP is stable, `P2` later improvement
+- Rule: every task should produce a visible output (page, route, mutation, test, report, or doc)
+- Rule: if a task is done, link the PR or file path next to it
 
 ---
 
-## 1) MVP Scope Lock + Technical Foundation
+## 1) MVP Scope Lock (Directly from `PROJECT.md`)
 
-- [ ] `P0` Finalize MVP boundaries (must-have vs post-MVP)
-- [ ] `P0` Create route map for all roles (planner/scanner/buyer/public)
-- [ ] `P0` Define shared domain types and constants (event statuses, ticket statuses, role enums)
-- [ ] `P0` Add app shell: layouts, navigation, role-aware menu
-- [ ] `P0` Add global empty/loading/error states for pages
-- [ ] `P1` Add reusable form components + validation helpers for Nuxt UI + Zod
+### 1.1 In scope for MVP
 
-**Done when**
+- [ ] `P0` Auth for registered users (signup, login, logout, reset password)
+- [ ] `P0` Registered user can view associated events with role per event (planner/scanner)
+- [ ] `P0` Event planner can create event with sales window and payment details
+- [ ] `P0` Event planner can create ticket types (name, price, quantity, metadata)
+- [ ] `P0` Event planner can create buyer form fields and mark required fields
+- [ ] `P0` Event planner can publish event and share public link
+- [ ] `P0` Buyer can open public event page, select tickets, submit form, and pay
+- [ ] `P0` System verifies payment and generates ticket(s) with QR code
+- [ ] `P0` Buyer receives confirmation email with QR code
+- [ ] `P0` Scanner can scan QR and get valid/already-used/invalid result
+- [ ] `P0` Scanner can view live checked-in count for assigned event
+- [ ] `P0` Planner can view core dashboard metrics (sold, revenue, checked-in)
+- [ ] `P0` Planner can view buyer form responses (searchable/sortable)
+- [ ] `P0` Planner can add/remove event planners and ticket scanners
 
-- MVP feature list is frozen in docs
-- Route map exists and all routes are scaffolded
-- Shared constants/types are used across frontend + backend
+### 1.2 Out of scope for MVP (post-MVP)
 
----
+- [ ] `P1` Offline scanning with sync queue
+- [ ] `P1` Trend charts and advanced analytics
+- [ ] `P1` Fraud detection and suspicious activity alerts
+- [ ] `P1` Advanced incident automation
 
-## 2) Authentication, Session, and Access Control
+### 1.3 MVP capability map (requirement -> route -> backend)
 
-- [ ] `P0` Build auth pages (`/login`, `/signup`, `/forgot-password`, `/reset-password`)
-- [ ] `P0` Add post-login dashboard landing route with role/event summary
-- [ ] `P0` Implement robust route guards for public/admin/scanner paths
-- [ ] `P0` Build event-level RBAC guard helpers in Convex (planner/scanner checks)
-- [ ] `P0` Add unauthorized and forbidden UX states
-- [ ] `P1` Add account profile page (name/avatar/password change)
+| ID  | MVP capability                                 | Route(s)                                                   | Backend capability (current or target)                                                                | Status  |
+| --- | ---------------------------------------------- | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | ------- |
+| M1  | Auth for registered users                      | `/signup`, `/login`, `/forgot-password`, `/reset-password` | Current: `convex/http.ts` auth routes + `server/api/auth/[...all].ts` + `useAuth.ts`                  | Partial |
+| M2  | View associated events and role per event      | `/dashboard`                                               | Target: `convex/eventRoles.ts:listUserEventAssociations`                                              | Missing |
+| M3  | Planner creates event with sales/payment rules | `/planner/events/new`, `/planner/events/[eventId]`         | Target: `convex/events.ts:createEvent`, `convex/events.ts:updateEvent`                                | Missing |
+| M4  | Planner creates and manages ticket types       | `/planner/events/[eventId]/tickets`                        | Target: `convex/ticketTypes.ts:createTicketType`, `convex/ticketTypes.ts:updateTicketType`            | Missing |
+| M5  | Planner builds buyer form fields               | `/planner/events/[eventId]/form-builder`                   | Target: `convex/formFields.ts:createFormField`, `convex/formFields.ts:updateFormField`                | Missing |
+| M6  | Planner publishes event and gets public link   | `/planner/events/[eventId]/publish`, `/events/[slug]`      | Target: `convex/events.ts:getPublishChecklist`, `convex/events.ts:publishEvent`                       | Missing |
+| M7  | Buyer selects tickets, submits form, pays      | `/events/[slug]`, `/events/[slug]/checkout`                | Target: `convex/checkout.ts:createPurchaseIntent`, `convex/payments.ts:initializePaystackTransaction` | Missing |
+| M8  | System verifies payment and issues QR tickets  | `/events/[slug]/confirmation/[purchaseRef]`                | Target: `convex/payments.ts:verifyPaystackPayment`, `convex/tickets.ts:issueTicketsFromPurchase`      | Missing |
+| M9  | Buyer receives confirmation email with QR      | `/events/[slug]/confirmation/[purchaseRef]`                | Target: `convex/email.ts:sendPurchaseConfirmationEmail`                                               | Missing |
+| M10 | Scanner validates QR status and checks in      | `/scanner/events`, `/scanner/events/[eventId]`             | Target: `convex/scanner.ts:validateScan`, `convex/scanner.ts:checkInTicket`                           | Missing |
+| M11 | Scanner sees real-time checked-in count        | `/scanner/events/[eventId]`                                | Target: `convex/scanner.ts:getCheckedInCount`                                                         | Missing |
+| M12 | Planner sees core dashboard metrics            | `/planner/events/[eventId]/dashboard`                      | Target: `convex/dashboard.ts:getCoreMetrics`                                                          | Missing |
+| M13 | Planner views searchable/sortable responses    | `/planner/events/[eventId]/responses`                      | Target: `convex/formResponses.ts:listResponses`                                                       | Missing |
+| M14 | Planner manages planners/scanners per event    | `/planner/events/[eventId]/team`                           | Target: `convex/eventRoles.ts:addEventRole`, `convex/eventRoles.ts:removeEventRole`                   | Missing |
 
-**Done when**
+### 1.4 Scope change rule
 
-- Unauthorized users cannot access protected routes
-- Scanner cannot access planner-only data
-- Buyers cannot access admin/scanner routes
+- Any new `P0` request must be added to this section with a route and backend mapping before implementation starts.
+- If a request cannot be mapped to `PROJECT.md`, default it to `P1` or `P2` until explicitly approved for MVP.
+- Do not start Phase work for an unmapped MVP requirement.
 
----
+### Done when
 
-## 3) Event Planner Core Flows
-
-### 3.1 Event Creation & Management
-
-- [ ] `P0` Create event wizard/form (name, date, sales start/end, payment details)
-- [ ] `P0` Add date/time business validations (sales window + event timing)
-- [ ] `P0` Implement event status transitions (`draft` -> `on_sale` -> `closed` -> `completed`)
-- [ ] `P1` Add edit event details with status-based restrictions
-- [ ] `P1` Add event archive/close actions
-
-### 3.2 Ticket Types
-
-- [ ] `P0` Create ticket type CRUD (name, price, quantity, metadata)
-- [ ] `P0` Enforce duplicate-name and zero-quantity rules
-- [ ] `P0` Prevent unsafe edits once sales begin
-- [ ] `P1` Add per-ticket sales metrics in planner view
-
-### 3.3 Custom Form Builder
-
-- [ ] `P0` Build form field CRUD (text/email/number/dropdown, required toggle, ordering)
-- [ ] `P0` Persist event-specific form schema
-- [ ] `P0` Validate required fields for buyer submission
-- [ ] `P1` Restrict destructive field edits after first purchase
-
-### 3.4 Publish & Public Link
-
-- [ ] `P0` Add publish readiness checks (event + ticket + form + payment config)
-- [ ] `P0` Generate stable public event sales link
-- [ ] `P0` Show publish errors with specific missing requirements
-
-**Done when**
-
-- Planner can go from draft event to published event without manual DB edits
-- Publish action fails safely with actionable messages
+- [x] `P0` MVP in-scope list is documented, reviewed, and agreed
+- [x] `P0` Every MVP row in section 1.3 has at least one route and one backend capability
+- [ ] `P0` Every item marked `P0` elsewhere in this file maps back to section 1.3 (no orphan `P0` work)
 
 ---
 
-## 4) Buyer Ticket Purchase Flow
+## 2) Route and Screen Inventory (Implementation Backbone)
 
-### 4.1 Public Event + Ticket Selection
+Create every route below first, even with placeholder content, so implementation can proceed screen by screen.
 
-- [ ] `P0` Build public event page with event details + available ticket types
-- [ ] `P0` Show remaining quantities and sales window status
-- [ ] `P0` Implement ticket selection cart with quantity constraints
+### 2.1 Public routes
 
-### 4.2 Form + Checkout
+- [x] `P0` `/` Landing page (value prop, role explanation, CTA) - `app/pages/index.vue`
+- [x] `P0` `/events/[slug]` Public event sales page - `app/pages/events/[slug]/index.vue`
+- [x] `P0` `/events/[slug]/checkout` Buyer checkout page - `app/pages/events/[slug]/checkout.vue`
+- [x] `P0` `/events/[slug]/confirmation/[purchaseRef]` Buyer confirmation page - `app/pages/events/[slug]/confirmation/[purchaseRef].vue`
 
-- [ ] `P0` Render dynamic planner-defined fields for buyer form
-- [ ] `P0` Validate and persist form responses linked to purchase
-- [ ] `P0` Build checkout summary and total calculation
-- [ ] `P0` Integrate Paystack initialize flow (server endpoint/action)
-- [ ] `P0` Integrate Paystack verify callback/webhook
-- [ ] `P0` Implement idempotent payment verification (duplicate callback safe)
+### 2.2 Auth routes
 
-### 4.3 Ticket Generation
+- [x] `P0` `/login` - `app/pages/login.vue`
+- [x] `P0` `/signup` - `app/pages/signup.vue`
+- [x] `P0` `/forgot-password` - `app/pages/forgot-password.vue`
+- [x] `P0` `/reset-password` - `app/pages/reset-password.vue`
 
-- [ ] `P0` Reserve inventory atomically on successful payment
-- [ ] `P0` Generate unique ticket records + unique code
-- [ ] `P0` Generate QR payload/code per ticket
-- [ ] `P1` Add safe rollback/retry paths for partial failures
+### 2.3 Registered-user dashboard routes
 
-**Done when**
+- [x] `P0` `/dashboard` Event association list (show role per event) - `app/pages/dashboard.vue`, `convex/eventRoles.ts`
+- [x] `P0` `/account` Basic profile and password update - `app/pages/account.vue`
 
-- Successful payment always results in correct number of tickets
-- Failed payments never consume ticket inventory
-- Duplicate provider callbacks do not create duplicate tickets
+### 2.4 Planner routes
 
----
+- [x] `P0` `/planner/events/new` - `app/pages/planner/events/new.vue`
+- [x] `P0` `/planner/events/[eventId]` - `app/pages/planner/events/[eventId]/index.vue`
+- [x] `P0` `/planner/events/[eventId]/tickets` - `app/pages/planner/events/[eventId]/tickets.vue`
+- [x] `P0` `/planner/events/[eventId]/form-builder` - `app/pages/planner/events/[eventId]/form-builder.vue`
+- [x] `P0` `/planner/events/[eventId]/publish` - `app/pages/planner/events/[eventId]/publish.vue`
+- [x] `P0` `/planner/events/[eventId]/dashboard` - `app/pages/planner/events/[eventId]/dashboard.vue`
+- [x] `P0` `/planner/events/[eventId]/responses` - `app/pages/planner/events/[eventId]/responses.vue`
+- [x] `P0` `/planner/events/[eventId]/team` - `app/pages/planner/events/[eventId]/team.vue`
 
-## 5) Ticket Delivery & Notifications
+### 2.5 Scanner routes
 
-- [ ] `P0` Build purchase confirmation email template
-- [ ] `P0` Send email with event/ticket details + QR code(s)
-- [ ] `P0` Add resend ticket email action
-- [ ] `P1` Add delivery status tracking (sent/failed/retry)
-- [ ] `P1` Add buyer confirmation page with downloadable ticket QR codes
+- [x] `P0` `/scanner/events` - `app/pages/scanner/events/index.vue`
+- [x] `P0` `/scanner/events/[eventId]` - `app/pages/scanner/events/[eventId].vue`
 
-**Done when**
+### Done when
 
-- Buyer receives email for successful purchase
-- Planner can troubleshoot failed email delivery
-
----
-
-## 6) Scanner Experience (Event Day Critical Path)
-
-- [ ] `P0` Build scanner event selection screen
-- [ ] `P0` Build QR scanning UI (camera permissions + scan loop)
-- [ ] `P0` Implement ticket validation mutation:
-  - exists
-  - belongs to event
-  - status valid/not used
-- [ ] `P0` Mark valid ticket as checked-in with timestamp + scanner ID
-- [ ] `P0` Return clear outcomes (`valid`, `already used`, `invalid/wrong event`)
-- [ ] `P0` Show real-time checked-in count
-- [ ] `P2` Add offline scan queue + sync conflict handling
-
-**Done when**
-
-- Scanner can process tickets quickly with clear status feedback
-- Duplicate scan is rejected safely and auditable
+- [x] All routes exist and are protected with correct auth/role rules - `app/middleware/auth.global.ts`, `convex/eventRoles.ts`, `app/plugins/convex-auth.client.ts`, `app/pages/forbidden.vue`
+- [x] No route returns 404 during normal planner, buyer, scanner flows - `app/pages/**`
 
 ---
 
-## 7) Planner Dashboard, Team Management, and Reporting
+## 3) Phase A - Public Foundation, Landing, and Auth
 
-### 7.1 Dashboard Analytics
+### Goal
 
-- [ ] `P0` Build planner dashboard with:
-  - tickets sold by type + total
-  - revenue by type + total
-  - checked-in count
-- [ ] `P1` Add trend charts (sales over time, check-in velocity)
+Users can understand the product, create accounts, log in, and reach the correct dashboard.
 
-### 7.2 Form Responses
+### Work items
 
-- [ ] `P0` Build searchable/sortable responses table
-- [ ] `P1` Add filters + CSV export
+- [ ] `P0` Build landing page sections: hero, how-it-works, role cards (planner/scanner/buyer), CTA buttons
+- [ ] `P0` Add public header/footer navigation with Login and Sign Up actions
+- [ ] `P0` Build auth pages and connect to Better Auth actions
+- [ ] `P0` Add auth error handling states (invalid credentials, email conflict, disabled account)
+- [ ] `P0` Build post-login redirect logic to `/dashboard`
+- [ ] `P0` Build unauthorized and forbidden pages/states
+- [x] `P0` Add route middleware rules for public, registered, planner-only, scanner-only routes - `app/middleware/auth.global.ts`, `server/api/authz/event-role.get.ts`
 
-### 7.3 Team Management
+### Edge cases
 
-- [ ] `P0` Add planner/scanner invite flow by email
-- [ ] `P0` Add role assignment and role removal flow
-- [ ] `P0` Enforce RBAC in all related queries/mutations
+- [ ] `P0` Prevent authenticated users from accessing auth pages unnecessarily
+- [ ] `P0` Preserve intended destination after login (`redirect` query)
 
-### 7.4 Post-Event Closeout
+### Done when
 
-- [ ] `P1` Auto/Manual event completion flow
-- [ ] `P1` Export attendee list + revenue report
-
-**Done when**
-
-- Planner can manage team, monitor performance, and export event data
+- New visitor can go from landing page to authenticated dashboard without manual steps
+- Route protection blocks wrong role access reliably
 
 ---
 
-## 8) Security, Reliability, and Observability
+## 4) Phase B - Planner Event Setup (Create -> Configure -> Publish)
 
-- [ ] `P0` Add centralized permission checks in Convex handlers
-- [ ] `P0` Add input validation for all server actions/mutations
-- [ ] `P0` Add payment webhook signature verification
-- [ ] `P1` Add Sentry error reporting for frontend + backend critical paths
-- [ ] `P1` Add audit logging for critical actions (publish, role changes, check-ins)
-- [ ] `P1` Add rate limiting/abuse controls for public endpoints
-- [ ] `P2` Add fraud checks and suspicious activity alerts
+### Goal
 
-**Done when**
+Planner can create a valid event and publish it with a working public link.
 
-- Critical user and payment actions are observable, validated, and auditable
+### 4.1 Event creation and rules
 
----
+- [ ] `P0` Build event create form (name, event datetime, sales start/end, payment account details)
+- [ ] `P0` Enforce date rules: sales start < sales end < event date
+- [ ] `P0` Store event in `draft` status initially
+- [ ] `P0` Build event edit page with status-based edit restrictions
 
-## 9) Testing Strategy (Must Run in CI)
+### 4.2 Ticket type management
 
-### 9.1 Unit Tests
+- [ ] `P0` Build ticket type CRUD (name, price, quantity, optional metadata)
+- [ ] `P0` Enforce no duplicate ticket names per event
+- [ ] `P0` Enforce quantity > 0 and price >= 0
+- [ ] `P0` Prevent risky ticket edits after sales begin
 
-- [ ] `P0` Validation schemas and domain rules
-- [ ] `P0` Price/total calculations and inventory logic
-- [ ] `P0` RBAC helper behavior
+### 4.3 Form builder
 
-### 9.2 Nuxt Component Tests
+- [ ] `P0` Build form field CRUD (text, email, number, dropdown)
+- [ ] `P0` Support required/optional toggle and display order
+- [ ] `P0` Persist form schema per event
+- [ ] `P0` Restrict destructive schema edits after first successful purchase
 
-- [ ] `P0` Auth forms and error states
-- [ ] `P0` Event/ticket/form builder interactions
-- [ ] `P0` Checkout and scanner UI states
+### 4.4 Publish flow
 
-### 9.3 E2E Tests
+- [ ] `P0` Build publish checklist UI showing missing requirements
+- [ ] `P0` Implement publish readiness checks (event details, tickets, form, payment config)
+- [ ] `P0` Generate stable public event slug/link
+- [ ] `P0` Move event state from `draft` to `on_sale` on successful publish
 
-- [ ] `P0` Planner happy path: create -> publish
-- [ ] `P0` Buyer happy path: select -> pay -> ticket received
-- [ ] `P0` Scanner happy path: scan valid + reject duplicate
-- [ ] `P1` Failure scenarios (payment failure, invalid QR, unauthorized access)
+### Done when
 
-### 9.4 CI/CD
-
-- [ ] `P0` Ensure CI runs lint, format, tests, build on PR and main
-- [ ] `P1` Add coverage thresholds and report artifacts
-
-**Done when**
-
-- Critical workflows are covered end-to-end and reliably pass in CI
+- Planner can create an event from empty state and publish successfully
+- Publish fails with clear requirement-specific errors when setup is incomplete
 
 ---
 
-## 10) Launch Readiness Checklist
+## 5) Phase C - Buyer Flow (Discover -> Select -> Submit -> Pay)
 
-- [ ] `P0` Production environment variables documented and validated
-- [ ] `P0` Payment sandbox -> production switch checklist
-- [ ] `P0` Email provider production setup + domain verification
-- [ ] `P0` Security review (auth flows, webhook verification, RBAC)
-- [ ] `P0` Smoke test in staging with real-like data
-- [ ] `P1` Basic admin runbook for event-day operations
-- [ ] `P1` Incident response notes (payment/email/scanner outages)
+### Goal
+
+Buyer can purchase tickets from the public event link end-to-end.
+
+### 5.1 Public event sales page
+
+- [ ] `P0` Show event details, ticket types, prices, and remaining quantities
+- [ ] `P0` Show sales state banners (not started, on sale, ended, sold out)
+- [ ] `P0` Build quantity selector with stock limits and per-order limits
+
+### 5.2 Buyer form and checkout
+
+- [ ] `P0` Render planner-defined custom fields dynamically
+- [ ] `P0` Validate required fields client-side and server-side
+- [ ] `P0` Build checkout summary (line items, fees if any, total)
+- [ ] `P0` Initialize Paystack transaction from server
+- [ ] `P0` Verify Paystack callback/webhook securely
+
+### 5.3 Payment safety
+
+- [ ] `P0` Make payment verification idempotent (same callback cannot create duplicates)
+- [ ] `P0` Handle payment failure and timeout states cleanly
+- [ ] `P0` Return user-facing purchase status pages/messages
+
+### Done when
+
+- Buyer can complete purchase with no manual intervention
+- Failed or duplicate payment signals do not over-allocate inventory
 
 ---
 
-## Suggested Implementation Order (Execution Sequence)
+## 6) Phase D - Ticket Issuance, QR, and Delivery
 
-1. `P0` Foundation + auth/access control
+### Goal
+
+Every successful purchase creates valid tickets and sends buyer confirmation.
+
+### Work items
+
+- [ ] `P0` Reserve and decrement inventory atomically only after verified payment
+- [ ] `P0` Create ticket record per purchased unit with unique ticket ID/code
+- [ ] `P0` Generate QR payload for each ticket
+- [ ] `P0` Build buyer confirmation page with ticket list and QR display
+- [ ] `P0` Send confirmation email with event info and QR attachment/link
+- [ ] `P0` Add resend confirmation email action
+- [ ] `P1` Track email delivery status (sent, failed, retried)
+
+### Done when
+
+- Every successful payment produces the exact expected number of tickets
+- Buyer can retrieve ticket from confirmation page and email
+
+---
+
+## 7) Phase E - Scanner Experience (Event-Day Critical Path)
+
+### Goal
+
+Scanner validates tickets quickly and check-ins are accurate.
+
+### Work items
+
+- [ ] `P0` Build scanner event list restricted to assigned events
+- [ ] `P0` Build scanner screen with camera permission and scan loop
+- [ ] `P0` Implement validation logic: ticket exists, event matches, ticket unused
+- [ ] `P0` Mark valid ticket as checked-in with timestamp and scanner user ID
+- [ ] `P0` Return strict statuses: `valid`, `already_used`, `invalid`
+- [ ] `P0` Show real-time checked-in counter for the selected event
+- [ ] `P1` Log scan attempts for audit and support debugging
+- [ ] `P2` Add offline queue and later sync conflict handling
+
+### Done when
+
+- Scanner can process repeated scans without accidental duplicate entry
+- Planner can audit who scanned which ticket and when
+
+---
+
+## 8) Phase F - Planner Dashboard, Team, and Closeout
+
+### Goal
+
+Planner can monitor event performance and manage event staff safely.
+
+### 8.1 Dashboard metrics
+
+- [ ] `P0` Show tickets sold by type and total
+- [ ] `P0` Show revenue by type and total
+- [ ] `P0` Show checked-in count
+- [ ] `P1` Add sales-over-time and check-in trend charts
+
+### 8.2 Form responses
+
+- [ ] `P0` Build searchable/sortable response table
+- [ ] `P1` Add filters and CSV export
+
+### 8.3 Team management
+
+- [ ] `P0` Invite planners and scanners by email
+- [ ] `P0` Assign and remove role per event
+- [ ] `P0` Enforce role checks on every related query/mutation
+
+### 8.4 Post-event closeout
+
+- [ ] `P1` Mark event as completed (manual and/or automatic)
+- [ ] `P1` Export attendee and revenue reports
+
+### Done when
+
+- Planner can run event operations without direct database access
+
+---
+
+## 9) Phase G - Security, Reliability, and Observability
+
+### Goal
+
+Critical flows are safe, auditable, and debuggable in production.
+
+### Work items
+
+- [ ] `P0` Centralize permission checks for planner/scanner actions
+- [ ] `P0` Validate all public inputs and mutation/action args
+- [ ] `P0` Verify payment webhook signature before processing
+- [ ] `P0` Add idempotency keys/guards for payment and ticket issuance flows
+- [ ] `P1` Add Sentry for frontend and backend error monitoring
+- [ ] `P1` Add audit logs for publish, role changes, and check-ins
+- [ ] `P1` Add basic abuse/rate limits on public endpoints
+
+### Done when
+
+- Security-critical actions fail closed and are traceable in logs
+
+---
+
+## 10) Phase H - Testing and CI Gates
+
+### Goal
+
+MVP flows are protected by automated tests before launch.
+
+### 10.1 Unit tests
+
+- [ ] `P0` Date and status transition rules
+- [ ] `P0` Ticket inventory and total calculations
+- [ ] `P0` Payment idempotency helpers
+- [ ] `P0` Role/permission helpers
+
+### 10.2 Component tests
+
+- [ ] `P0` Auth forms with error states
+- [ ] `P0` Planner setup screens (event, ticket, form, publish)
+- [ ] `P0` Buyer checkout states
+- [ ] `P0` Scanner result states
+
+### 10.3 End-to-end tests
+
+- [ ] `P0` Planner path: create event -> add tickets -> build form -> publish
+- [ ] `P0` Buyer path: open public page -> buy ticket -> see confirmation
+- [ ] `P0` Scanner path: scan valid -> reject duplicate
+- [ ] `P1` Failure path: payment failure, invalid QR, unauthorized route access
+
+### 10.4 CI checks
+
+- [ ] `P0` CI runs lint, format, unit/component/e2e tests, and build
+- [ ] `P1` Coverage report artifact and minimum thresholds
+
+### Done when
+
+- PR cannot merge if critical MVP tests fail
+
+---
+
+## 11) Launch Readiness Checklist
+
+- [ ] `P0` Validate production env vars for auth, payment, email, and observability
+- [ ] `P0` Complete Paystack sandbox-to-live switch checklist
+- [ ] `P0` Complete email provider production setup and sender verification
+- [ ] `P0` Run staging smoke test of full planner -> buyer -> scanner path
+- [ ] `P0` Create event-day runbook for scanner and support operators
+- [ ] `P1` Create rollback notes for payment/email/scanner outages
+
+---
+
+## 12) Practical Execution Order (Do This Sequence)
+
+1. `P0` Route scaffolding + landing page + auth + middleware
 2. `P0` Planner event setup (event, tickets, form, publish)
-3. `P0` Buyer flow + payment + ticket generation
-4. `P0` Scanner check-in critical path
-5. `P0` Dashboard essentials + team management
-6. `P0` Tests for critical flows
-7. `P1/P2` Observability, exports, offline mode, polish
+3. `P0` Public event page + buyer form + checkout + payment verify
+4. `P0` Ticket generation + QR + email + confirmation page
+5. `P0` Scanner validation and check-in flow
+6. `P0` Planner dashboard essentials + team roles
+7. `P0` Unit/component/e2e tests for all critical paths
+8. `P0` Launch checklist and staging smoke test
 
 ---
 
-## Immediate Next 7 Tasks (Start Here)
+## Immediate Next 10 Tasks (Concrete Start List)
 
-- [ ] `P0` Scaffold missing routes/pages for auth, dashboard, planner, scanner, public event
-- [ ] `P0` Implement Convex RBAC helper utilities and apply to existing handlers
-- [ ] `P0` Build event create/edit flow with date validation rules
-- [ ] `P0` Build ticket type management with inventory constraints
-- [ ] `P0` Build form builder + schema persistence
-- [ ] `P0` Implement publish readiness checks + public link generation
-- [ ] `P0` Add first E2E smoke test for auth + event creation
+- [x] `P0` Scaffold all routes listed in section 2 with placeholder pages and guards - `app/pages/**`, `app/middleware/auth.global.ts`
+- [ ] `P0` Build landing page (`/`) with role-focused CTA to signup/login/public event
+- [ ] `P0` Implement auth flow pages and post-login redirect to `/dashboard`
+- [ ] `P0` Build planner event create/edit page with date validation
+- [ ] `P0` Build ticket type CRUD with duplicate and quantity rules
+- [ ] `P0` Build form builder and persist form schema per event
+- [ ] `P0` Build publish checklist and event publish action
+- [ ] `P0` Build public event sales page and buyer checkout page
+- [ ] `P0` Implement payment verify -> ticket generation -> confirmation email pipeline
+- [ ] `P0` Build scanner page with valid/already-used/invalid outcomes

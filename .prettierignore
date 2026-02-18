@@ -3,4 +3,5 @@ dist
 .output
 node_modules
 convex/_generated
+.agents
 *.lock
