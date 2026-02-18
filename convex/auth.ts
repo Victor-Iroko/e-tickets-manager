@@ -17,11 +17,15 @@ export const createAuth = (ctx: GenericCtx<DataModel>) =>
     emailAndPassword: {
       enabled: true,
       sendResetPassword: async ({ user, url }) => {
-        if ('runAction' in ctx) {
-          void ctx.runAction(internal.email.sendResetPasswordEmail, {
-            email: user.email,
-            resetUrl: url
-          })
+        if ('scheduler' in ctx) {
+          void ctx.scheduler.runAfter(
+            0,
+            internal.email.sendResetPasswordEmail,
+            {
+              email: user.email,
+              resetUrl: url
+            }
+          )
           return
         }
 

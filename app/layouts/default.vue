@@ -3,11 +3,29 @@ import type { DropdownMenuItem, NavigationMenuItem } from '@nuxt/ui'
 
 const { session } = await useSession()
 const { signOut } = useAuth()
+const route = useRoute()
+
+const activeHomeSection = useActiveHomeSection()
 
 const navItems = computed<NavigationMenuItem[]>(() => [
-  { label: 'Features', to: '/#features', exactHash: true },
-  { label: 'How It Works', to: '/#how-it-works', exactHash: true },
-  { label: 'Roles', to: '/#roles', exactHash: true }
+  {
+    label: 'Features',
+    to: '/#features',
+    exactHash: true,
+    active: route.path === '/' && activeHomeSection.value === 'features'
+  },
+  {
+    label: 'How It Works',
+    to: '/#how-it-works',
+    exactHash: true,
+    active: route.path === '/' && activeHomeSection.value === 'how-it-works'
+  },
+  {
+    label: 'Roles',
+    to: '/#roles',
+    exactHash: true,
+    active: route.path === '/' && activeHomeSection.value === 'roles'
+  }
 ])
 
 const userMenuItems = computed<DropdownMenuItem[][]>(() => [
@@ -59,6 +77,7 @@ const userMenuItems = computed<DropdownMenuItem[][]>(() => [
               :src="session.user?.image ?? undefined"
               icon="i-lucide:user-round"
               size="sm"
+              :alt="`${session.user.name} profile Image`"
             />
           </UDropdownMenu>
         </template>
@@ -76,40 +95,54 @@ const userMenuItems = computed<DropdownMenuItem[][]>(() => [
         />
         <USeparator class="my-4" />
         <template v-if="session">
-          <UButton
-            label="Dashboard"
-            to="/dashboard"
-            color="neutral"
-            variant="ghost"
-            icon="i-lucide-layout-dashboard"
-            block
-          />
-          <UButton
-            label="Account"
-            to="/account"
-            color="neutral"
-            variant="ghost"
-            icon="i-lucide-user"
-            block
-          />
-          <UButton
-            label="Sign out"
-            color="neutral"
-            variant="ghost"
-            icon="i-lucide-log-out"
-            block
-            @click="signOut()"
-          />
+          <div class="-mx-2.5 space-y-1">
+            <UButton
+              label="Dashboard"
+              to="/dashboard"
+              color="neutral"
+              variant="ghost"
+              icon="i-lucide-layout-dashboard"
+              class="justify-start"
+              block
+            />
+            <UButton
+              label="Account"
+              to="/account"
+              color="neutral"
+              variant="ghost"
+              icon="i-lucide-user"
+              class="justify-start"
+              block
+            />
+            <UButton
+              label="Sign out"
+              color="neutral"
+              variant="ghost"
+              icon="i-lucide-log-out"
+              class="justify-start"
+              block
+              @click="signOut()"
+            />
+          </div>
         </template>
         <template v-else>
-          <UButton
-            label="Log in"
-            to="/login"
-            color="neutral"
-            variant="ghost"
-            block
-          />
-          <UButton label="Get Started" to="/signup" block />
+          <div class="-mx-2.5 space-y-1">
+            <UButton
+              label="Log in"
+              to="/login"
+              color="neutral"
+              variant="ghost"
+              class="justify-start"
+              block
+            />
+            <UButton
+              label="Get Started"
+              to="/signup"
+              class="justify-start"
+              variant="outline"
+              block
+            />
+          </div>
         </template>
       </template>
     </UHeader>

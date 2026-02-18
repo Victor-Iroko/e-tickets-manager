@@ -124,18 +124,17 @@ Users can understand the product, create accounts, log in, and reach the correct
 
 ### Work items
 
-- [ ] `P0` Build landing page sections: hero, how-it-works, role cards (planner/scanner/buyer), CTA buttons
-- [ ] `P0` Add public header/footer navigation with Login and Sign Up actions
-- [ ] `P0` Build auth pages and connect to Better Auth actions
-- [ ] `P0` Add auth error handling states (invalid credentials, email conflict, disabled account)
-- [ ] `P0` Build post-login redirect logic to `/dashboard`
-- [ ] `P0` Build unauthorized and forbidden pages/states
+- [x] `P0` Build landing page sections: hero, how-it-works, role cards (planner/scanner/buyer), CTA buttons - `app/pages/index.vue`
+- [x] `P0` Add public header/footer navigation with Login and Sign Up actions - `app/layouts/default.vue`
+- [x] `P0` Build auth pages and connect to Better Auth actions - `app/pages/login.vue`, `app/pages/signup.vue`, `app/pages/forgot-password.vue`, `app/pages/reset-password.vue`, `app/composables/useAuth.ts`
+- [x] `P0` Add auth error handling states (invalid credentials, email conflict, disabled account) - `app/composables/useAuth.ts`
+- [x] `P0` Build post-login redirect logic to `/dashboard` - `app/composables/useAuth.ts`, `app/middleware/auth.global.ts`
+- [x] `P0` Build unauthorized and forbidden pages/states - `app/pages/forbidden.vue`
 - [x] `P0` Add route middleware rules for public, registered, planner-only, scanner-only routes - `app/middleware/auth.global.ts`, `server/api/authz/event-role.get.ts`
 
 ### Edge cases
 
-- [ ] `P0` Prevent authenticated users from accessing auth pages unnecessarily
-- [ ] `P0` Preserve intended destination after login (`redirect` query)
+- [x] `P0` Preserve intended destination after login (`redirect` query) - `app/middleware/auth.global.ts`, `app/composables/useAuth.ts`
 
 ### Done when
 

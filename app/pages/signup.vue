@@ -39,33 +39,36 @@ const redirectQuery = computed(() =>
       class="space-y-4"
       @submit="onSubmit"
     >
-      <UFormField name="name" label="Full name" required>
+      <UFormField name="name" label="Full name" class="w-full" required>
         <UInput
           v-model="state.name"
           placeholder="Jane Doe"
           icon="i-lucide-user"
           size="lg"
+          class="w-full"
           autofocus
         />
       </UFormField>
 
-      <UFormField name="email" label="Email" required>
+      <UFormField name="email" label="Email" class="w-full" required>
         <UInput
           v-model="state.email"
           type="email"
           placeholder="you@example.com"
           icon="i-lucide-mail"
           size="lg"
+          class="w-full"
         />
       </UFormField>
 
-      <UFormField name="password" label="Password" required>
+      <UFormField name="password" label="Password" class="w-full" required>
         <UInput
           v-model="state.password"
           type="password"
           placeholder="Minimum 8 characters"
           icon="i-lucide-lock"
           size="lg"
+          class="w-full"
         />
       </UFormField>
 

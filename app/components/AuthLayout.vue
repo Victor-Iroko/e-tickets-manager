@@ -103,7 +103,9 @@ defineProps<{
       </div>
 
       <!-- Form container -->
-      <div class="flex flex-1 items-center justify-center px-6 pb-10 lg:px-12">
+      <div
+        class="flex flex-1 items-center justify-center px-6 py-10 lg:px-12 lg:py-12"
+      >
         <div class="w-full max-w-sm space-y-6">
           <div class="space-y-2">
             <h2

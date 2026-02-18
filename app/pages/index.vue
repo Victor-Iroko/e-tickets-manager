@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import type { AccordionItem } from '@nuxt/ui'
+import type { HomeNavSectionId } from '~/composables/useHomeNavSection'
+
 definePageMeta({
   auth: false
 })
@@ -13,7 +16,127 @@ useSeoMeta({
   ogType: 'website'
 })
 
-const faqItems = [
+const activeHomeSection = useActiveHomeSection()
+
+const featuresSectionRef = ref<HTMLElement | null>(null)
+const howItWorksSectionRef = ref<HTMLElement | null>(null)
+const rolesSectionRef = ref<HTMLElement | null>(null)
+
+const sectionRefs: Record<HomeNavSectionId, Ref<HTMLElement | null>> = {
+  features: featuresSectionRef,
+  'how-it-works': howItWorksSectionRef,
+  roles: rolesSectionRef
+}
+
+let sectionObserver: IntersectionObserver | null = null
+const visibleSections = new Map<HomeNavSectionId, IntersectionObserverEntry>()
+
+const updateActiveSection = (entries: IntersectionObserverEntry[]) => {
+  entries.forEach((entry) => {
+    const sectionId = entry.target.id as HomeNavSectionId
+
+    if (entry.isIntersecting) {
+      visibleSections.set(sectionId, entry)
+      return
+    }
+
+    visibleSections.delete(sectionId)
+  })
+
+  if (!visibleSections.size) {
+    activeHomeSection.value = null
+    return
+  }
+
+  const nextActiveSection = [...visibleSections.entries()]
+    .sort((entryA, entryB) => {
+      const ratioDiff =
+        entryB[1].intersectionRatio - entryA[1].intersectionRatio
+
+      if (ratioDiff !== 0) {
+        return ratioDiff
+      }
+
+      return (
+        Math.abs(entryA[1].boundingClientRect.top) -
+        Math.abs(entryB[1].boundingClientRect.top)
+      )
+    })
+    .at(0)?.[0]
+
+  activeHomeSection.value = nextActiveSection ?? null
+}
+
+const stopSectionObserver = () => {
+  sectionObserver?.disconnect()
+  sectionObserver = null
+  visibleSections.clear()
+}
+
+const startSectionObserver = async () => {
+  stopSectionObserver()
+
+  if (!import.meta.client) {
+    activeHomeSection.value = null
+    return
+  }
+
+  await nextTick()
+
+  const sections = Object.values(sectionRefs)
+    .map((sectionRef) => sectionRef.value)
+    .filter((section): section is HTMLElement => Boolean(section))
+
+  if (!sections.length) {
+    activeHomeSection.value = null
+    return
+  }
+
+  sectionObserver = new IntersectionObserver(updateActiveSection, {
+    rootMargin: '-25% 0px -55% 0px',
+    threshold: [0, 0.2, 0.4, 0.6, 0.8, 1]
+  })
+
+  sections.forEach((section) => sectionObserver?.observe(section))
+}
+
+onMounted(() => {
+  void startSectionObserver()
+})
+
+onBeforeUnmount(() => {
+  stopSectionObserver()
+  activeHomeSection.value = null
+})
+
+const howItWorksSteps = [
+  {
+    step: 1,
+    title: 'Planner Publishes',
+    description:
+      'Create your event, set ticket types and prices, build a custom buyer form, and publish your event link.',
+    icon: 'i-lucide-calendar-plus',
+    accent: 'primary'
+  },
+  {
+    step: 2,
+    title: 'Buyer Pays & Gets QR',
+    description:
+      'Attendees select tickets, fill the buyer form, pay securely via Paystack, and receive their QR code instantly by email.',
+    icon: 'i-lucide-credit-card',
+    accent: 'secondary'
+  },
+  {
+    step: 3,
+    title: 'Scanner Validates at Entry',
+    description:
+      'Scan QR codes at the door for instant valid, invalid, or already-used results. Attendance counts update in real time.',
+    icon: 'i-lucide-scan-line',
+    accent: 'primary'
+  }
+] as const
+
+const faqItems: AccordionItem[] = [
   {
     label: 'What happens if a payment fails?',
     content:
@@ -49,9 +172,6 @@ const faqItems = [
 
 <template>
   <div>
-    <!-- ============================================= -->
-    <!-- HERO SECTION                                  -->
-    <!-- ============================================= -->
     <UPageHero
       orientation="horizontal"
       :ui="{
@@ -141,202 +261,142 @@ const faqItems = [
       </div>
     </UPageHero>
 
-    <!-- ============================================= -->
-    <!-- PROBLEM / SOLUTION                            -->
-    <!-- ============================================= -->
-    <UPageSection
-      id="features"
-      headline="Why Ticketly?"
-      title="Stop juggling forms, receipts, and manual check-ins"
-      description="Most event organizers are stuck between building an expensive custom site or relying on Google Forms and payment screenshots. Neither handles ticket validation or event-day entry well."
-      :features="[
-        {
-          title: 'No Custom Dev Needed',
-          description:
-            'Skip the expensive custom website. Create your event, configure tickets, and go live in minutes.',
-          icon: 'i-lucide-zap'
-        },
-        {
-          title: 'No Manual Receipts',
-          description:
-            'Payments are verified automatically. No more chasing screenshots or matching bank transfers to names.',
-          icon: 'i-lucide-receipt'
-        },
-        {
-          title: 'Instant QR Validation',
-          description:
-            'Every ticket has a unique QR code. Scan at the door for immediate valid, invalid, or already-used results.',
-          icon: 'i-lucide-scan-line'
-        }
-      ]"
-    />
+    <!-- PROBLEM / SOLUTION -->
 
-    <!-- ============================================= -->
-    <!-- HOW IT WORKS — 3-STEP FLOW                    -->
-    <!-- ============================================= -->
-    <UPageSection
-      id="how-it-works"
-      headline="How It Works"
-      title="Three steps from creation to check-in"
-      description="A streamlined flow that takes your event from idea to entry validation."
-      :ui="{ container: 'max-w-5xl' }"
-    >
-      <div class="grid gap-8 sm:grid-cols-3">
-        <!-- Step 1 -->
-        <div
-          class="group relative rounded-2xl border border-default bg-default p-6 transition-all hover:border-primary/40 hover:shadow-lg"
-        >
-          <div
-            class="mb-4 inline-flex size-12 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-inverted"
-          >
-            <UIcon name="i-lucide-calendar-plus" class="size-6" />
-          </div>
-          <div
-            class="mb-2 inline-flex size-6 items-center justify-center rounded-full bg-muted font-heading text-xs font-bold text-muted"
-          >
-            1
-          </div>
-          <h3 class="mb-2 font-heading text-lg font-semibold text-highlighted">
-            Planner Publishes
-          </h3>
-          <p class="text-sm leading-relaxed text-muted">
-            Create your event, set ticket types and prices, build a custom buyer
-            form, and publish your event link.
-          </p>
-        </div>
+    <section id="features" ref="featuresSectionRef">
+      <UPageSection
+        headline="Why Ticketly?"
+        title="Stop juggling forms, receipts, and manual check-ins"
+        description="Most event organizers are stuck between building an expensive custom site or relying on Google Forms and payment screenshots. Neither handles ticket validation or event-day entry well."
+        :features="[
+          {
+            title: 'No Custom Dev Needed',
+            description:
+              'Skip the expensive custom website. Create your event, configure tickets, and go live in minutes.',
+            icon: 'i-lucide-zap'
+          },
+          {
+            title: 'No Manual Receipts',
+            description:
+              'Payments are verified automatically. No more chasing screenshots or matching bank transfers to names.',
+            icon: 'i-lucide-receipt'
+          },
+          {
+            title: 'Instant QR Validation',
+            description:
+              'Every ticket has a unique QR code. Scan at the door for immediate valid, invalid, or already-used results.',
+            icon: 'i-lucide-scan-line'
+          }
+        ]"
+      />
+    </section>
 
-        <!-- Step 2 -->
-        <div
-          class="group relative rounded-2xl border border-default bg-default p-6 transition-all hover:border-secondary/40 hover:shadow-lg"
-        >
-          <div
-            class="mb-4 inline-flex size-12 items-center justify-center rounded-xl bg-secondary/10 text-secondary transition-colors group-hover:bg-secondary group-hover:text-inverted"
-          >
-            <UIcon name="i-lucide-credit-card" class="size-6" />
-          </div>
-          <div
-            class="mb-2 inline-flex size-6 items-center justify-center rounded-full bg-muted font-heading text-xs font-bold text-muted"
-          >
-            2
-          </div>
-          <h3 class="mb-2 font-heading text-lg font-semibold text-highlighted">
-            Buyer Pays &amp; Gets QR
-          </h3>
-          <p class="text-sm leading-relaxed text-muted">
-            Attendees select tickets, fill the buyer form, pay securely via
-            Paystack, and receive their QR code instantly by email.
-          </p>
-        </div>
+    <!-- HOW IT WORKS — 3-STEP FLOW -->
 
-        <!-- Step 3 -->
-        <div
-          class="group relative rounded-2xl border border-default bg-default p-6 transition-all hover:border-primary/40 hover:shadow-lg"
-        >
-          <div
-            class="mb-4 inline-flex size-12 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-inverted"
-          >
-            <UIcon name="i-lucide-scan-line" class="size-6" />
-          </div>
-          <div
-            class="mb-2 inline-flex size-6 items-center justify-center rounded-full bg-muted font-heading text-xs font-bold text-muted"
-          >
-            3
-          </div>
-          <h3 class="mb-2 font-heading text-lg font-semibold text-highlighted">
-            Scanner Validates at Entry
-          </h3>
-          <p class="text-sm leading-relaxed text-muted">
-            Scan QR codes at the door for instant valid, invalid, or
-            already-used results. Attendance counts update in real time.
-          </p>
-        </div>
-      </div>
-    </UPageSection>
-
-    <!-- ============================================= -->
-    <!-- ROLE: EVENT PLANNER                           -->
-    <!-- ============================================= -->
-    <UPageSection
-      id="roles"
-      headline="For Event Planners"
-      title="Everything you need to run a professional event"
-      description="From creation to closeout — manage your entire event lifecycle in one place."
-      orientation="horizontal"
-    >
-      <div
-        class="w-full overflow-hidden rounded-2xl border border-default bg-elevated shadow-xl"
+    <section id="how-it-works" ref="howItWorksSectionRef">
+      <UPageSection
+        headline="How It Works"
+        title="Three steps from creation to check-in"
+        description="A streamlined flow that takes your event from idea to entry validation."
+        :ui="{ container: 'max-w-5xl' }"
       >
-        <!-- Mini dashboard mockup -->
-        <div class="border-b border-default bg-muted/50 px-4 py-3">
-          <div class="flex items-center gap-2">
-            <div class="size-3 rounded-full bg-error/60" />
-            <div class="size-3 rounded-full bg-warning/60" />
-            <div class="size-3 rounded-full bg-success/60" />
-            <span class="ml-2 text-xs text-dimmed">Event Dashboard</span>
-          </div>
+        <div class="grid gap-8 sm:grid-cols-3">
+          <HowItWorksStepCard
+            v-for="step in howItWorksSteps"
+            :key="step.step"
+            :step="step.step"
+            :title="step.title"
+            :description="step.description"
+            :icon="step.icon"
+            :accent="step.accent"
+          />
         </div>
-        <div class="space-y-4 p-5">
-          <div class="grid grid-cols-3 gap-3">
-            <div class="rounded-lg bg-muted p-3">
-              <p class="text-xs text-dimmed">Tickets Sold</p>
-              <p class="font-heading text-2xl font-bold text-highlighted">
-                847
-              </p>
-            </div>
-            <div class="rounded-lg bg-muted p-3">
-              <p class="text-xs text-dimmed">Revenue</p>
-              <p class="font-heading text-2xl font-bold text-highlighted">
-                &#8358;4.2M
-              </p>
-            </div>
-            <div class="rounded-lg bg-muted p-3">
-              <p class="text-xs text-dimmed">Checked In</p>
-              <p class="font-heading text-2xl font-bold text-highlighted">
-                312
-              </p>
-            </div>
-          </div>
-          <div class="space-y-2">
-            <div
-              class="flex items-center justify-between rounded-lg bg-muted px-3 py-2"
-            >
-              <div class="flex items-center gap-2">
-                <UBadge
-                  label="VIP"
-                  color="primary"
-                  variant="subtle"
-                  size="xs"
-                />
-                <span class="text-sm text-default">VIP Pass</span>
-              </div>
-              <span class="text-sm font-medium text-highlighted"
-                >150 / 200</span
-              >
-            </div>
-            <div
-              class="flex items-center justify-between rounded-lg bg-muted px-3 py-2"
-            >
-              <div class="flex items-center gap-2">
-                <UBadge
-                  label="REG"
-                  color="secondary"
-                  variant="subtle"
-                  size="xs"
-                />
-                <span class="text-sm text-default">Regular</span>
-              </div>
-              <span class="text-sm font-medium text-highlighted"
-                >697 / 1000</span
-              >
-            </div>
-          </div>
-        </div>
-      </div>
-    </UPageSection>
+      </UPageSection>
+    </section>
 
-    <!-- ============================================= -->
-    <!-- PLANNER CAPABILITIES GRID                     -->
-    <!-- ============================================= -->
+    <!-- ROLE: EVENT PLANNER -->
+
+    <section id="roles" ref="rolesSectionRef">
+      <UPageSection
+        headline="For Event Planners"
+        title="Everything you need to run a professional event"
+        description="From creation to closeout — manage your entire event lifecycle in one place."
+        orientation="horizontal"
+      >
+        <div
+          class="w-full overflow-hidden rounded-2xl border border-default bg-elevated shadow-xl"
+        >
+          <!-- Mini dashboard mockup -->
+          <div class="border-b border-default bg-muted/50 px-4 py-3">
+            <div class="flex items-center gap-2">
+              <div class="size-3 rounded-full bg-error/60" />
+              <div class="size-3 rounded-full bg-warning/60" />
+              <div class="size-3 rounded-full bg-success/60" />
+              <span class="ml-2 text-xs text-dimmed">Event Dashboard</span>
+            </div>
+          </div>
+          <div class="space-y-4 p-5">
+            <div class="grid grid-cols-3 gap-3">
+              <div class="rounded-lg bg-muted p-3">
+                <p class="text-xs text-dimmed">Tickets Sold</p>
+                <p class="font-heading text-2xl font-bold text-highlighted">
+                  847
+                </p>
+              </div>
+              <div class="rounded-lg bg-muted p-3">
+                <p class="text-xs text-dimmed">Revenue</p>
+                <p class="font-heading text-2xl font-bold text-highlighted">
+                  &#8358;4.2M
+                </p>
+              </div>
+              <div class="rounded-lg bg-muted p-3">
+                <p class="text-xs text-dimmed">Checked In</p>
+                <p class="font-heading text-2xl font-bold text-highlighted">
+                  312
+                </p>
+              </div>
+            </div>
+            <div class="space-y-2">
+              <div
+                class="flex items-center justify-between rounded-lg bg-muted px-3 py-2"
+              >
+                <div class="flex items-center gap-2">
+                  <UBadge
+                    label="VIP"
+                    color="primary"
+                    variant="subtle"
+                    size="xs"
+                  />
+                  <span class="text-sm text-default">VIP Pass</span>
+                </div>
+                <span class="text-sm font-medium text-highlighted"
+                  >150 / 200</span
+                >
+              </div>
+              <div
+                class="flex items-center justify-between rounded-lg bg-muted px-3 py-2"
+              >
+                <div class="flex items-center gap-2">
+                  <UBadge
+                    label="REG"
+                    color="secondary"
+                    variant="subtle"
+                    size="xs"
+                  />
+                  <span class="text-sm text-default">Regular</span>
+                </div>
+                <span class="text-sm font-medium text-highlighted"
+                  >697 / 1000</span
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </UPageSection>
+    </section>
+
+    <!-- PLANNER CAPABILITIES GRID -->
+
     <UPageSection
       :features="[
         {
@@ -378,9 +438,8 @@ const faqItems = [
       ]"
     />
 
-    <!-- ============================================= -->
-    <!-- ROLE: TICKET SCANNER                          -->
-    <!-- ============================================= -->
+    <!-- ROLE: TICKET SCANNER -->
+
     <UPageSection
       headline="For Ticket Scanners"
       title="Fast, reliable entry validation"
@@ -579,16 +638,16 @@ const faqItems = [
       title="Common questions, clear answers"
       :ui="{ container: 'max-w-3xl' }"
     >
-      <div class="space-y-4">
-        <UCard v-for="item in faqItems" :key="item.label">
-          <template #header>
-            <h3 class="font-heading text-base font-semibold text-highlighted">
-              {{ item.label }}
-            </h3>
-          </template>
-          <p class="text-sm leading-relaxed text-muted">{{ item.content }}</p>
-        </UCard>
-      </div>
+      <UAccordion
+        :items="faqItems"
+        :ui="{
+          item: 'mb-3 overflow-hidden rounded-xl border border-default bg-default last:mb-0',
+          trigger: 'px-4 py-4 sm:px-5',
+          label: 'font-heading text-base font-semibold text-highlighted',
+          body: 'px-4 pt-0 pb-4 sm:px-5',
+          content: 'text-sm leading-relaxed text-muted'
+        }"
+      />
     </UPageSection>
 
     <!-- ============================================= -->

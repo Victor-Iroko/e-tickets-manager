@@ -71,24 +71,36 @@ async function onSubmit(event: FormSubmitEvent<ResetPasswordSchema>) {
         class="space-y-4"
         @submit="onSubmit"
       >
-        <UFormField name="password" label="New password" required>
+        <UFormField
+          name="password"
+          label="New password"
+          class="w-full"
+          required
+        >
           <UInput
             v-model="state.password"
             type="password"
             placeholder="Minimum 8 characters"
             icon="i-lucide-lock"
             size="lg"
+            class="w-full"
             autofocus
           />
         </UFormField>
 
-        <UFormField name="confirmPassword" label="Confirm password" required>
+        <UFormField
+          name="confirmPassword"
+          label="Confirm password"
+          class="w-full"
+          required
+        >
           <UInput
             v-model="state.confirmPassword"
             type="password"
             placeholder="Re-enter your password"
             icon="i-lucide-lock"
             size="lg"
+            class="w-full"
           />
         </UFormField>
 

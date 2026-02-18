@@ -38,18 +38,19 @@ const redirectQuery = computed(() =>
       class="space-y-4"
       @submit="onSubmit"
     >
-      <UFormField name="email" label="Email" required>
+      <UFormField name="email" label="Email" class="w-full" required>
         <UInput
           v-model="state.email"
           type="email"
           placeholder="you@example.com"
           icon="i-lucide-mail"
           size="lg"
+          class="w-full"
           autofocus
         />
       </UFormField>
 
-      <UFormField name="password" label="Password" required>
+      <UFormField name="password" label="Password" class="w-full" required>
         <template #hint>
           <NuxtLink
             :to="`/forgot-password${redirectQuery}`"
@@ -64,6 +65,7 @@ const redirectQuery = computed(() =>
           placeholder="Enter your password"
           icon="i-lucide-lock"
           size="lg"
+          class="w-full"
         />
       </UFormField>
 
