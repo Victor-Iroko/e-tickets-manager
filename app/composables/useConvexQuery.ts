@@ -72,22 +72,63 @@ async function useConvexQuerySSR<Query extends QueryReference>(
     { ...options, server: options.ssr ?? true }
   )
 
+  const data = ref<FunctionReturnType<Query> | null>(
+    (asyncData.data.value as FunctionReturnType<Query> | null) ?? null
+  )
+  const error = ref<Error | null>(
+    (asyncData.error.value as Error | null) ?? null
+  )
+  const pending = ref<boolean>(asyncData.pending.value)
+  const status = ref<AsyncDataRequestStatus>(asyncData.status.value)
+
+  const state: SubscriptionState<FunctionReturnType<Query>> = {
+    data,
+    error,
+    pending,
+    status
+  }
+
+  const syncFromAsyncData = (): void => {
+    data.value =
+      (asyncData.data.value as FunctionReturnType<Query> | null) ?? null
+    error.value = (asyncData.error.value as Error | null) ?? null
+    pending.value = asyncData.pending.value
+    status.value = asyncData.status.value
+  }
+
+  let refresh = async (): Promise<void> => {
+    await asyncData.refresh()
+    syncFromAsyncData()
+  }
+
   if (import.meta.client && client) {
-    setupClientSubscription(
+    const subscription = setupClientSubscription(
       query,
       args,
-      {
-        data: asyncData.data as Ref<FunctionReturnType<Query> | null>,
-        error: asyncData.error as Ref<Error | null>,
-        pending: asyncData.pending,
-        status: asyncData.status
-      },
+      state,
       client,
       false
     )
+
+    refresh = subscription.refresh
   }
 
-  return asyncData as AsyncData<FunctionReturnType<Query> | null, Error | null>
+  const result = {
+    data,
+    pending,
+    error,
+    status,
+    refresh,
+    execute: refresh,
+    clear: () => {
+      data.value = null
+      error.value = null
+      pending.value = false
+      status.value = 'idle'
+    }
+  }
+
+  return result as AsyncData<FunctionReturnType<Query> | null, Error | null>
 }
 
 function useConvexQueryClient<Query extends QueryReference>(

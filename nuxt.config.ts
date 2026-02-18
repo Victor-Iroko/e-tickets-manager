@@ -27,10 +27,24 @@ export default defineNuxtConfig({
   // Configure security module to allow auth endpoints
   security: {
     headers: {
-      crossOriginEmbedderPolicy:
-        process.env.NODE_ENV === 'development' ? 'unsafe-none' : 'require-corp',
+      crossOriginEmbedderPolicy: 'require-corp',
       contentSecurityPolicy: {
         'img-src': ["'self'", 'data:', 'https://lh3.googleusercontent.com']
+      }
+    }
+  },
+
+  $development: {
+    security: {
+      headers: {
+        crossOriginEmbedderPolicy: 'unsafe-none'
+      }
+    },
+    routeRules: {
+      '/__nuxt_hydration': {
+        security: {
+          xssValidator: false
+        }
       }
     }
   }

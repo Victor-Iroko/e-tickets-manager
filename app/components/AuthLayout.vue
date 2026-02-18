@@ -33,7 +33,7 @@ defineProps<{
       </div>
 
       <!-- Top: logo -->
-      <div class="relative z-10">
+      <div class="relative z-10 flex items-center justify-between">
         <NuxtLink to="/" class="flex items-center gap-2">
           <UIcon name="i-lucide-ticket" class="size-7 text-primary" />
           <span
@@ -42,6 +42,7 @@ defineProps<{
             Ticketly
           </span>
         </NuxtLink>
+        <UColorModeButton />
       </div>
 
       <!-- Center: value prop -->
@@ -98,6 +99,7 @@ defineProps<{
             Ticketly
           </span>
         </NuxtLink>
+        <UColorModeButton />
       </div>
 
       <!-- Form container -->

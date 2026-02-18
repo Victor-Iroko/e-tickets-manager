@@ -33,18 +33,18 @@ const userMenuItems = computed<DropdownMenuItem[][]>(() => [
   <div>
     <UHeader>
       <template #title>
-        <NuxtLink
-          to="/"
+        <span
           class="flex items-center gap-2 font-heading text-xl font-bold tracking-tight"
         >
           <UIcon name="i-lucide-ticket" class="size-6 text-primary" />
           Ticketly
-        </NuxtLink>
+        </span>
       </template>
 
       <UNavigationMenu :items="navItems" />
 
       <template #right>
+        <UColorModeButton />
         <template v-if="session">
           <UButton
             label="Dashboard"

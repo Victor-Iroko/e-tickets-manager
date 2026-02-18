@@ -45,116 +45,6 @@ const faqItems = [
       'All payments are processed through Paystack, a PCI-DSS compliant payment processor. We never store card details on our servers. Payment webhooks are verified with cryptographic signatures.'
   }
 ]
-
-const prefersReducedMotion = usePreferredReducedMotion()
-
-type RevealMotionOptions = {
-  delay?: number
-  y?: number
-  scale?: number
-}
-
-const createRevealMotion = ({
-  delay = 0,
-  y = 32,
-  scale = 1
-}: RevealMotionOptions = {}) =>
-  computed(() => {
-    if (prefersReducedMotion.value === 'reduce') {
-      return {
-        initial: { opacity: 1, y: 0, scale: 1 },
-        visibleOnce: {
-          opacity: 1,
-          y: 0,
-          scale: 1,
-          transition: { duration: 0, delay: 0 }
-        }
-      }
-    }
-
-    return {
-      initial: { opacity: 0, y, scale },
-      visibleOnce: {
-        opacity: 1,
-        y: 0,
-        scale: 1,
-        transition: {
-          type: 'spring',
-          stiffness: 180,
-          damping: 22,
-          mass: 0.85,
-          delay
-        }
-      }
-    }
-  })
-
-const heroMotion = createRevealMotion({ y: 24 })
-const heroTicketMotion = computed(() => {
-  if (prefersReducedMotion.value === 'reduce') {
-    return {
-      initial: { opacity: 1, y: 0, scale: 1, rotate: 0 },
-      visibleOnce: {
-        opacity: 1,
-        y: 0,
-        scale: 1,
-        rotate: 0,
-        transition: { duration: 0, delay: 0 }
-      }
-    }
-  }
-
-  return {
-    initial: { opacity: 0, y: 34, scale: 0.95, rotate: -1.2 },
-    visibleOnce: {
-      opacity: 1,
-      y: 0,
-      scale: 1,
-      rotate: 0,
-      transition: {
-        type: 'spring',
-        stiffness: 160,
-        damping: 20,
-        mass: 0.9,
-        delay: 120
-      }
-    },
-    hovered: {
-      y: -6,
-      transition: {
-        type: 'spring',
-        stiffness: 240,
-        damping: 18
-      }
-    }
-  }
-})
-
-const heroTopBadgeMotion = createRevealMotion({
-  delay: 280,
-  y: 14,
-  scale: 0.65
-})
-const heroBottomBadgeMotion = createRevealMotion({
-  delay: 360,
-  y: 14,
-  scale: 0.65
-})
-
-const featuresMotion = createRevealMotion({ y: 28 })
-const howItWorksMotion = createRevealMotion({ y: 28 })
-const stepOneMotion = createRevealMotion({ delay: 80, y: 22 })
-const stepTwoMotion = createRevealMotion({ delay: 160, y: 22 })
-const stepThreeMotion = createRevealMotion({ delay: 240, y: 22 })
-const plannerShowcaseMotion = createRevealMotion({ y: 30 })
-const plannerCapabilitiesMotion = createRevealMotion({ y: 30 })
-const scannerShowcaseMotion = createRevealMotion({ y: 30 })
-const attendeesShowcaseMotion = createRevealMotion({ y: 30 })
-const reliabilityMotion = createRevealMotion({ y: 30 })
-const securityMotion = createRevealMotion({ y: 30 })
-const faqMotion = createRevealMotion({ y: 24 })
-const faqAccordionMotion = createRevealMotion({ delay: 120, y: 18 })
-const finalCtaMotion = createRevealMotion({ y: 20 })
 </script>
 
 <template>
@@ -163,7 +53,6 @@ const finalCtaMotion = createRevealMotion({ y: 20 })
     <!-- HERO SECTION                                  -->
     <!-- ============================================= -->
     <UPageHero
-      v-motion="heroMotion"
       orientation="horizontal"
       :ui="{
         title:
@@ -201,7 +90,6 @@ const finalCtaMotion = createRevealMotion({ y: 20 })
       <div class="relative mx-auto w-full max-w-md lg:max-w-lg">
         <!-- Ticket card mockup -->
         <div
-          v-motion="heroTicketMotion"
           class="rounded-2xl border border-default bg-elevated p-6 shadow-2xl ring-1 ring-default/50"
         >
           <div class="mb-4 flex items-center justify-between">
@@ -241,13 +129,11 @@ const finalCtaMotion = createRevealMotion({ y: 20 })
         </div>
         <!-- Decorative floating elements -->
         <div
-          v-motion="heroTopBadgeMotion"
           class="absolute -top-4 -right-4 flex size-12 items-center justify-center rounded-full bg-primary/10 text-primary ring-2 ring-primary/20"
         >
           <UIcon name="i-lucide-check-circle" class="size-6" />
         </div>
         <div
-          v-motion="heroBottomBadgeMotion"
           class="absolute -bottom-3 -left-3 flex size-10 items-center justify-center rounded-full bg-secondary/10 text-secondary ring-2 ring-secondary/20"
         >
           <UIcon name="i-lucide-scan-line" class="size-5" />
@@ -260,7 +146,6 @@ const finalCtaMotion = createRevealMotion({ y: 20 })
     <!-- ============================================= -->
     <UPageSection
       id="features"
-      v-motion="featuresMotion"
       headline="Why Ticketly?"
       title="Stop juggling forms, receipts, and manual check-ins"
       description="Most event organizers are stuck between building an expensive custom site or relying on Google Forms and payment screenshots. Neither handles ticket validation or event-day entry well."
@@ -291,7 +176,6 @@ const finalCtaMotion = createRevealMotion({ y: 20 })
     <!-- ============================================= -->
     <UPageSection
       id="how-it-works"
-      v-motion="howItWorksMotion"
       headline="How It Works"
       title="Three steps from creation to check-in"
       description="A streamlined flow that takes your event from idea to entry validation."
@@ -300,7 +184,6 @@ const finalCtaMotion = createRevealMotion({ y: 20 })
       <div class="grid gap-8 sm:grid-cols-3">
         <!-- Step 1 -->
         <div
-          v-motion="stepOneMotion"
           class="group relative rounded-2xl border border-default bg-default p-6 transition-all hover:border-primary/40 hover:shadow-lg"
         >
           <div
@@ -324,7 +207,6 @@ const finalCtaMotion = createRevealMotion({ y: 20 })
 
         <!-- Step 2 -->
         <div
-          v-motion="stepTwoMotion"
           class="group relative rounded-2xl border border-default bg-default p-6 transition-all hover:border-secondary/40 hover:shadow-lg"
         >
           <div
@@ -348,7 +230,6 @@ const finalCtaMotion = createRevealMotion({ y: 20 })
 
         <!-- Step 3 -->
         <div
-          v-motion="stepThreeMotion"
           class="group relative rounded-2xl border border-default bg-default p-6 transition-all hover:border-primary/40 hover:shadow-lg"
         >
           <div
@@ -377,7 +258,6 @@ const finalCtaMotion = createRevealMotion({ y: 20 })
     <!-- ============================================= -->
     <UPageSection
       id="roles"
-      v-motion="plannerShowcaseMotion"
       headline="For Event Planners"
       title="Everything you need to run a professional event"
       description="From creation to closeout — manage your entire event lifecycle in one place."
@@ -458,7 +338,6 @@ const finalCtaMotion = createRevealMotion({ y: 20 })
     <!-- PLANNER CAPABILITIES GRID                     -->
     <!-- ============================================= -->
     <UPageSection
-      v-motion="plannerCapabilitiesMotion"
       :features="[
         {
           title: 'Event Setup',
@@ -503,7 +382,6 @@ const finalCtaMotion = createRevealMotion({ y: 20 })
     <!-- ROLE: TICKET SCANNER                          -->
     <!-- ============================================= -->
     <UPageSection
-      v-motion="scannerShowcaseMotion"
       headline="For Ticket Scanners"
       title="Fast, reliable entry validation"
       description="Scan QR codes in seconds. See ticket status instantly. Track attendance live."
@@ -564,7 +442,6 @@ const finalCtaMotion = createRevealMotion({ y: 20 })
     <!-- ROLE: TICKET BUYER                            -->
     <!-- ============================================= -->
     <UPageSection
-      v-motion="attendeesShowcaseMotion"
       headline="For Attendees"
       title="Buy tickets in under a minute"
       description="Browse events, pick your seats, pay securely, and get your QR ticket delivered to your inbox."
@@ -628,7 +505,6 @@ const finalCtaMotion = createRevealMotion({ y: 20 })
     <!-- EVENT-DAY RELIABILITY                         -->
     <!-- ============================================= -->
     <UPageSection
-      v-motion="reliabilityMotion"
       headline="Built for Event Day"
       title="Reliable when it matters most"
       description="The critical path — from scanner to entry gate — is designed for speed, accuracy, and trust."
@@ -664,7 +540,6 @@ const finalCtaMotion = createRevealMotion({ y: 20 })
     <!-- TRUST & SECURITY                              -->
     <!-- ============================================= -->
     <UPageSection
-      v-motion="securityMotion"
       headline="Secure by Design"
       title="Your events, payments, and data — protected"
       description="Every layer of the platform is built with security and auditability in mind."
@@ -700,19 +575,26 @@ const finalCtaMotion = createRevealMotion({ y: 20 })
     <!-- FAQ                                           -->
     <!-- ============================================= -->
     <UPageSection
-      v-motion="faqMotion"
       headline="FAQ"
       title="Common questions, clear answers"
       :ui="{ container: 'max-w-3xl' }"
     >
-      <UAccordion v-motion="faqAccordionMotion" :items="faqItems" />
+      <div class="space-y-4">
+        <UCard v-for="item in faqItems" :key="item.label">
+          <template #header>
+            <h3 class="font-heading text-base font-semibold text-highlighted">
+              {{ item.label }}
+            </h3>
+          </template>
+          <p class="text-sm leading-relaxed text-muted">{{ item.content }}</p>
+        </UCard>
+      </div>
     </UPageSection>
 
     <!-- ============================================= -->
     <!-- FINAL CTA                                     -->
     <!-- ============================================= -->
     <UPageCTA
-      v-motion="finalCtaMotion"
       title="Launch your event in minutes"
       description="Join event planners who trust Ticketly for ticket sales, secure payments, and seamless entry management. Get started for free."
       :links="[
