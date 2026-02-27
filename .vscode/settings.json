@@ -9,5 +9,6 @@
   "tailwindCSS.experimental.classRegex": [
     ["ui:\\s*{([^)]*)\\s*}", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
   ],
-  "conventionalCommits.scopes": ["ai-agents"]
+  "conventionalCommits.scopes": ["ai-agents"],
+  "chatgpt.openOnStartup": true
 }

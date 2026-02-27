@@ -28,21 +28,10 @@ const sectionRefs: Record<HomeNavSectionId, Ref<HTMLElement | null>> = {
   roles: rolesSectionRef
 }
 
-let sectionObserver: IntersectionObserver | null = null
+const sectionObserverStops: Array<() => void> = []
 const visibleSections = new Map<HomeNavSectionId, IntersectionObserverEntry>()
 
-const updateActiveSection = (entries: IntersectionObserverEntry[]) => {
-  entries.forEach((entry) => {
-    const sectionId = entry.target.id as HomeNavSectionId
-
-    if (entry.isIntersecting) {
-      visibleSections.set(sectionId, entry)
-      return
-    }
-
-    visibleSections.delete(sectionId)
-  })
-
+const updateActiveSection = () => {
   if (!visibleSections.size) {
     activeHomeSection.value = null
     return
@@ -68,8 +57,8 @@ const updateActiveSection = (entries: IntersectionObserverEntry[]) => {
 }
 
 const stopSectionObserver = () => {
-  sectionObserver?.disconnect()
-  sectionObserver = null
+  sectionObserverStops.forEach((stopObserver) => stopObserver())
+  sectionObserverStops.length = 0
   visibleSections.clear()
 }
 
@@ -83,21 +72,36 @@ const startSectionObserver = async () => {
 
   await nextTick()
 
-  const sections = Object.values(sectionRefs)
-    .map((sectionRef) => sectionRef.value)
-    .filter((section): section is HTMLElement => Boolean(section))
+  const sectionEntries = Object.entries(sectionRefs) as [
+    HomeNavSectionId,
+    Ref<HTMLElement | null>
+  ][]
 
-  if (!sections.length) {
-    activeHomeSection.value = null
-    return
-  }
+  sectionEntries.forEach(([sectionId, sectionRef]) => {
+    const { stop } = useIntersectionObserver(
+      sectionRef,
+      ([entry]) => {
+        if (!entry) {
+          return
+        }
 
-  sectionObserver = new IntersectionObserver(updateActiveSection, {
-    rootMargin: '-25% 0px -55% 0px',
-    threshold: [0, 0.2, 0.4, 0.6, 0.8, 1]
+        if (entry.isIntersecting) {
+          visibleSections.set(sectionId, entry)
+          updateActiveSection()
+          return
+        }
+
+        visibleSections.delete(sectionId)
+        updateActiveSection()
+      },
+      {
+        rootMargin: '-25% 0px -55% 0px',
+        threshold: [0, 0.2, 0.4, 0.6, 0.8, 1]
+      }
+    )
+
+    sectionObserverStops.push(stop)
   })
-
-  sections.forEach((section) => sectionObserver?.observe(section))
 }
 
 onMounted(() => {

@@ -6,6 +6,14 @@
   --font-heading: 'Bricolage Grotesque', sans-serif;
 }
 
+:root {
+  --ui-bg: #fffff2;
+}
+
+.dark {
+  --ui-bg: var(--ui-color-neutral-900);
+}
+
 h1,
 h2,
 h3,

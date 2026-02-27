@@ -10,6 +10,7 @@ import type {
   AsyncDataOptions,
   AsyncDataRequestStatus
 } from 'nuxt/app'
+import { fetchConvexToken } from '~/utils/fetch-convex-token'
 import type { MaybeRefOrGetter, Ref } from 'vue'
 import { onScopeDispose, ref, toValue, watch } from 'vue'
 
@@ -67,6 +68,12 @@ async function useConvexQuerySSR<Query extends QueryReference>(
     key,
     async () => {
       const httpClient = new ConvexHttpClient(convexUrl)
+
+      const token = await getConvexQueryAuthToken(client)
+      if (token) {
+        httpClient.setAuth(token)
+      }
+
       return httpClient.query(query, toValue(args))
     },
     { ...options, server: options.ssr ?? true }
@@ -243,6 +250,44 @@ function createErrorAsyncData<Query extends QueryReference>(
   }
 
   return result as AsyncData<FunctionReturnType<Query> | null, Error | null>
+}
+
+async function getConvexQueryAuthToken(
+  client: ReturnType<typeof useConvexClient>
+): Promise<string | null> {
+  if (import.meta.client) {
+    return client?.getAuth()?.token ?? null
+  }
+
+  const event = useRequestEvent()
+  const requestContext = event?.context as
+    | {
+        convexAuthToken?: string | null
+        convexAuthTokenLoaded?: boolean
+      }
+    | undefined
+
+  if (requestContext?.convexAuthTokenLoaded) {
+    return requestContext.convexAuthToken ?? null
+  }
+
+  try {
+    const { token } = await fetchConvexToken()
+
+    if (requestContext) {
+      requestContext.convexAuthToken = token
+      requestContext.convexAuthTokenLoaded = true
+    }
+
+    return token
+  } catch {
+    if (requestContext) {
+      requestContext.convexAuthToken = null
+      requestContext.convexAuthTokenLoaded = true
+    }
+
+    return null
+  }
 }
 
 function sortObjectKeys<T>(value: T): T {

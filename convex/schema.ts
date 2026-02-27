@@ -4,6 +4,7 @@ import { v } from 'convex/values'
 export default defineSchema({
   events: defineTable({
     name: v.string(),
+    slug: v.string(),
     description: v.optional(v.string()),
     date: v.number(),
     salesStartTime: v.number(),
@@ -14,16 +15,19 @@ export default defineSchema({
       v.literal('closed'),
       v.literal('completed')
     ),
+    bankName: v.optional(v.string()),
+    bankAccountNumber: v.optional(v.string()),
     paymentAccountId: v.optional(v.string()),
-    createdBy: v.id('user'),
+    createdBy: v.string(),
     createdAt: v.number()
   })
     .index('by_created_by', ['createdBy'])
-    .index('by_status', ['status']),
+    .index('by_status', ['status'])
+    .index('by_slug', ['slug']),
 
   eventRoles: defineTable({
     eventId: v.id('events'),
-    userId: v.id('user'),
+    userId: v.string(),
     role: v.union(v.literal('planner'), v.literal('scanner'))
   })
     .index('by_user', ['userId'])
@@ -76,7 +80,7 @@ export default defineSchema({
       v.literal('refunded')
     ),
     checkedInAt: v.optional(v.number()),
-    checkedInBy: v.optional(v.id('user')),
+    checkedInBy: v.optional(v.string()),
     formData: v.optional(v.string()),
     createdAt: v.number()
   })

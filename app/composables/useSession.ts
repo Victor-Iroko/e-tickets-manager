@@ -1,4 +1,5 @@
 import type { Session } from '~/utils/auth-client'
+import { useFetch, useRequestHeaders } from '#app'
 
 export async function useSession() {
   const headers = import.meta.server ? useRequestHeaders(['cookie']) : undefined

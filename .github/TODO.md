@@ -15,12 +15,12 @@ Last updated: 2026-02-17
 
 ### 1.1 In scope for MVP
 
-- [ ] `P0` Auth for registered users (signup, login, logout, reset password)
-- [ ] `P0` Registered user can view associated events with role per event (planner/scanner)
-- [ ] `P0` Event planner can create event with sales window and payment details
-- [ ] `P0` Event planner can create ticket types (name, price, quantity, metadata)
-- [ ] `P0` Event planner can create buyer form fields and mark required fields
-- [ ] `P0` Event planner can publish event and share public link
+- [x] `P0` Auth for registered users (signup, login, logout, reset password)
+- [x] `P0` Registered user can view associated events with role per event (planner/scanner)
+- [x] `P0` Event planner can create event with sales window and payment details
+- [x] `P0` Event planner can create ticket types (name, price, quantity, metadata)
+- [x] `P0` Event planner can create buyer form fields and mark required fields
+- [x] `P0` Event planner can publish event and share public link
 - [ ] `P0` Buyer can open public event page, select tickets, submit form, and pay
 - [ ] `P0` System verifies payment and generates ticket(s) with QR code
 - [ ] `P0` Buyer receives confirmation email with QR code
@@ -41,12 +41,12 @@ Last updated: 2026-02-17
 
 | ID  | MVP capability                                 | Route(s)                                                   | Backend capability (current or target)                                                                | Status  |
 | --- | ---------------------------------------------- | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | ------- |
-| M1  | Auth for registered users                      | `/signup`, `/login`, `/forgot-password`, `/reset-password` | Current: `convex/http.ts` auth routes + `server/api/auth/[...all].ts` + `useAuth.ts`                  | Partial |
-| M2  | View associated events and role per event      | `/dashboard`                                               | Target: `convex/eventRoles.ts:listUserEventAssociations`                                              | Missing |
-| M3  | Planner creates event with sales/payment rules | `/planner/events/new`, `/planner/events/[eventId]`         | Target: `convex/events.ts:createEvent`, `convex/events.ts:updateEvent`                                | Missing |
-| M4  | Planner creates and manages ticket types       | `/planner/events/[eventId]/tickets`                        | Target: `convex/ticketTypes.ts:createTicketType`, `convex/ticketTypes.ts:updateTicketType`            | Missing |
-| M5  | Planner builds buyer form fields               | `/planner/events/[eventId]/form-builder`                   | Target: `convex/formFields.ts:createFormField`, `convex/formFields.ts:updateFormField`                | Missing |
-| M6  | Planner publishes event and gets public link   | `/planner/events/[eventId]/publish`, `/events/[slug]`      | Target: `convex/events.ts:getPublishChecklist`, `convex/events.ts:publishEvent`                       | Missing |
+| M1  | Auth for registered users                      | `/signup`, `/login`, `/forgot-password`, `/reset-password` | Current: `convex/http.ts` auth routes + `server/api/auth/[...all].ts` + `useAuth.ts`                  | Done    |
+| M2  | View associated events and role per event      | `/dashboard`                                               | Target: `convex/eventRoles.ts:listUserEventAssociations`                                              | Done    |
+| M3  | Planner creates event with sales/payment rules | `/planner/events/new`, `/planner/events/[eventId]`         | Target: `convex/events.ts:createEvent`, `convex/events.ts:updateEvent`                                | Done    |
+| M4  | Planner creates and manages ticket types       | `/planner/events/[eventId]/tickets`                        | Target: `convex/ticketTypes.ts:createTicketType`, `convex/ticketTypes.ts:updateTicketType`            | Done    |
+| M5  | Planner builds buyer form fields               | `/planner/events/[eventId]/form-builder`                   | Target: `convex/formFields.ts:createFormField`, `convex/formFields.ts:updateFormField`                | Done    |
+| M6  | Planner publishes event and gets public link   | `/planner/events/[eventId]/publish`, `/events/[slug]`      | Target: `convex/events.ts:getPublishChecklist`, `convex/events.ts:publishEvent`                       | Partial |
 | M7  | Buyer selects tickets, submits form, pays      | `/events/[slug]`, `/events/[slug]/checkout`                | Target: `convex/checkout.ts:createPurchaseIntent`, `convex/payments.ts:initializePaystackTransaction` | Missing |
 | M8  | System verifies payment and issues QR tickets  | `/events/[slug]/confirmation/[purchaseRef]`                | Target: `convex/payments.ts:verifyPaystackPayment`, `convex/tickets.ts:issueTicketsFromPurchase`      | Missing |
 | M9  | Buyer receives confirmation email with QR      | `/events/[slug]/confirmation/[purchaseRef]`                | Target: `convex/email.ts:sendPurchaseConfirmationEmail`                                               | Missing |
@@ -151,31 +151,31 @@ Planner can create a valid event and publish it with a working public link.
 
 ### 4.1 Event creation and rules
 
-- [ ] `P0` Build event create form (name, event datetime, sales start/end, payment account details)
-- [ ] `P0` Enforce date rules: sales start < sales end < event date
-- [ ] `P0` Store event in `draft` status initially
-- [ ] `P0` Build event edit page with status-based edit restrictions
+- [x] `P0` Build event create form (name, event datetime, sales start/end, payment account details)
+- [x] `P0` Enforce date rules: sales start < sales end < event date
+- [x] `P0` Store event in `draft` status initially
+- [x] `P0` Build event edit page with status-based edit restrictions
 
 ### 4.2 Ticket type management
 
-- [ ] `P0` Build ticket type CRUD (name, price, quantity, optional metadata)
-- [ ] `P0` Enforce no duplicate ticket names per event
-- [ ] `P0` Enforce quantity > 0 and price >= 0
-- [ ] `P0` Prevent risky ticket edits after sales begin
+- [x] `P0` Build ticket type CRUD (name, price, quantity, optional metadata)
+- [x] `P0` Enforce no duplicate ticket names per event
+- [x] `P0` Enforce quantity > 0 and price >= 0
+- [~] `P0` Prevent risky ticket edits after sales begin
 
 ### 4.3 Form builder
 
-- [ ] `P0` Build form field CRUD (text, email, number, dropdown)
-- [ ] `P0` Support required/optional toggle and display order
-- [ ] `P0` Persist form schema per event
-- [ ] `P0` Restrict destructive schema edits after first successful purchase
+- [x] `P0` Build form field CRUD (text, email, number, dropdown)
+- [x] `P0` Support required/optional toggle and display order
+- [x] `P0` Persist form schema per event
+- [x] `P0` Restrict destructive schema edits after first successful purchase
 
 ### 4.4 Publish flow
 
-- [ ] `P0` Build publish checklist UI showing missing requirements
-- [ ] `P0` Implement publish readiness checks (event details, tickets, form, payment config)
-- [ ] `P0` Generate stable public event slug/link
-- [ ] `P0` Move event state from `draft` to `on_sale` on successful publish
+- [x] `P0` Build publish checklist UI showing missing requirements
+- [x] `P0` Implement publish readiness checks (event details, tickets, form, payment config)
+- [~] `P0` Generate stable public event slug/link
+- [x] `P0` Move event state from `draft` to `on_sale` on successful publish
 
 ### Done when
 

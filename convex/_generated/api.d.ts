@@ -11,7 +11,13 @@
 import type * as auth from "../auth.js";
 import type * as email from "../email.js";
 import type * as eventRoles from "../eventRoles.js";
+import type * as events from "../events.js";
+import type * as formFields from "../formFields.js";
 import type * as http from "../http.js";
+import type * as ticketTypes from "../ticketTypes.js";
+import type * as validators_events from "../validators/events.js";
+import type * as validators_formFields from "../validators/formFields.js";
+import type * as validators_ticketTypes from "../validators/ticketTypes.js";
 
 import type {
   ApiFromModules,
@@ -23,7 +29,13 @@ declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   email: typeof email;
   eventRoles: typeof eventRoles;
+  events: typeof events;
+  formFields: typeof formFields;
   http: typeof http;
+  ticketTypes: typeof ticketTypes;
+  "validators/events": typeof validators_events;
+  "validators/formFields": typeof validators_formFields;
+  "validators/ticketTypes": typeof validators_ticketTypes;
 }>;
 
 /**
