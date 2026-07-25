@@ -1,0 +1,87 @@
+{
+  "name": "e-tickets-manager",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "test": "vp test",
+    "test:watch": "vp test --watch",
+    "test:coverage": "vp test --coverage",
+    "test:unit": "vp test --project unit",
+    "test:nuxt": "vp test --project nuxt",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "prepare": "vp config"
+  },
+  "dependencies": {
+    "@nuxt/a11y": "^1.0.0-alpha.1",
+    "@nuxt/eslint": "^1.16.0",
+    "@nuxt/hints": "^1.1.4",
+    "@nuxt/image": "^2.0.0",
+    "@nuxt/test-utils": "^4.0.3",
+    "@nuxt/ui": "^4.10.0",
+    "@nuxtjs/seo": "^5.3.6",
+    "@pinia/nuxt": "^1.0.1",
+    "@tiptap/core": "^3.29.0",
+    "@tiptap/extension-bubble-menu": "^3.29.0",
+    "@tiptap/extension-code": "^3.29.0",
+    "@tiptap/extension-collaboration": "^3.29.0",
+    "@tiptap/extension-drag-handle": "^3.29.0",
+    "@tiptap/extension-drag-handle-vue-3": "^3.29.0",
+    "@tiptap/extension-floating-menu": "^3.29.0",
+    "@tiptap/extension-horizontal-rule": "^3.29.0",
+    "@tiptap/extension-image": "^3.29.0",
+    "@tiptap/extension-mention": "^3.29.0",
+    "@tiptap/extension-node-range": "^3.29.0",
+    "@tiptap/extension-placeholder": "^3.29.0",
+    "@tiptap/markdown": "^3.29.0",
+    "@tiptap/pm": "^3.29.0",
+    "@tiptap/starter-kit": "^3.29.0",
+    "@tiptap/suggestion": "^3.29.0",
+    "@tiptap/vue-3": "^3.29.0",
+    "@vueuse/nuxt": "^14.3.0",
+    "eslint": "^10.8.0",
+    "nuxt": "^4.5.0",
+    "pinia": "^4.0.2",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^6.0.3",
+    "vue": "^3.5.40",
+    "vue-router": "^5.2.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.62.0",
+    "@vitest/coverage-v8": "4.1.10",
+    "@vue/test-utils": "^2.4.11",
+    "happy-dom": "^20.11.1",
+    "playwright-core": "^1.62.0",
+    "vite-plus": "0.2.4",
+    "vitest": "4.1.10"
+  },
+  "overrides": {
+    "brace-expansion": "^2.0.1",
+    "esbuild": "^0.28.1",
+    "minimatch": "^9.0.5",
+    "sharp": "^0.35.0",
+    "vite": "npm:@voidzero-dev/vite-plus-core@0.2.4",
+    "vitest": "4.1.10"
+  },
+  "devEngines": {
+    "packageManager": {
+      "name": "npm",
+      "version": "12.0.1",
+      "onFail": "download"
+    }
+  },
+  "allowScripts": {
+    "esbuild@0.28.1": true,
+    "esbuild@0.27.7": true,
+    "sharp@0.34.5": true,
+    "sharp@0.35.3": true,
+    "unrs-resolver@1.12.2": true,
+    "vue-demi@0.14.10": true
+  }
+}
