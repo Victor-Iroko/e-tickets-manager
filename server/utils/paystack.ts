@@ -1,0 +1,149 @@
+import { createHmac, timingSafeEqual } from "node:crypto";
+import { ofetch } from "ofetch";
+import type {
+  TransactionRequest,
+  TransactionResponse,
+  VerifyTransactionResponse,
+  ChargeCardRequest,
+  ChargeCardResponse,
+  AccountLookupResponse,
+  ListBanksResponse,
+  TransferRecipientRequest,
+  TransferRecipientResponse,
+  TransferRequest,
+  TransferResponse,
+  RequeryTransferResponse,
+  RefundRequest,
+  RefundResponse,
+} from "../types/payment-provider.types.js";
+
+const BASE_URL = "https://api.paystack.co";
+
+function headers() {
+  return {
+    Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+    "Content-Type": "application/json",
+  };
+}
+
+const paystackFetch = ofetch.create({
+  baseURL: BASE_URL,
+  headers: headers(),
+});
+
+export async function initializeTransaction(
+  body: TransactionRequest,
+): Promise<TransactionResponse> {
+  const payload: Record<string, unknown> = {
+    email: body.email,
+    amount: body.amount,
+  };
+  if (body.currency) payload.currency = body.currency;
+  if (body.reference) payload.reference = body.reference;
+  if (body.callback_url) payload.callback_url = body.callback_url;
+  if (body.channels) payload.channels = body.channels;
+  if (body.metadata) payload.metadata = JSON.stringify(body.metadata);
+  if (body.bearer) payload.bearer = body.bearer;
+  if (body.subaccount) payload.subaccount = body.subaccount;
+  if (body.plan) payload.plan = body.plan;
+  if (body.invoice_limit) payload.invoice_limit = body.invoice_limit;
+  if (body.split_code) payload.split_code = body.split_code;
+  if (body.transaction_charge) payload.transaction_charge = body.transaction_charge;
+
+  return paystackFetch<TransactionResponse>("/transaction/initialize", {
+    method: "POST",
+    body: payload,
+  });
+}
+
+export async function verifyTransaction(reference: string): Promise<VerifyTransactionResponse> {
+  return paystackFetch<VerifyTransactionResponse>(`/transaction/verify/${reference}`);
+}
+
+export async function chargeCard(body: ChargeCardRequest): Promise<ChargeCardResponse> {
+  const payload: Record<string, unknown> = {
+    authorization_code: body.authorization_code,
+    email: body.email,
+    amount: body.amount,
+  };
+  if (body.reference) payload.reference = body.reference;
+  if (body.currency) payload.currency = body.currency;
+  if (body.metadata) payload.metadata = JSON.stringify(body.metadata);
+  if (body.channels) payload.channels = body.channels;
+
+  return paystackFetch<ChargeCardResponse>("/transaction/charge_authorization", {
+    method: "POST",
+    body: payload,
+  });
+}
+
+export function verifyWebhookSignature(payload: string, signature: string): boolean {
+  try {
+    const expected = createHmac("sha512", process.env.PAYSTACK_SECRET_KEY!)
+      .update(payload)
+      .digest("hex");
+    return timingSafeEqual(Buffer.from(expected), Buffer.from(signature));
+  } catch {
+    return false;
+  }
+}
+
+export async function accountLookup(
+  bankCode: string,
+  accountNumber: string,
+): Promise<AccountLookupResponse> {
+  return paystackFetch<AccountLookupResponse>(
+    `/bank/resolve?account_number=${accountNumber}&bank_code=${bankCode}`,
+  );
+}
+
+export async function listBanks(currency?: string): Promise<ListBanksResponse> {
+  const params = currency ? `?currency=${currency}` : "";
+  return paystackFetch<ListBanksResponse>(`/bank${params}`);
+}
+
+export async function createTransferRecipient(
+  body: TransferRecipientRequest,
+): Promise<TransferRecipientResponse> {
+  const payload: Record<string, unknown> = {
+    type: body.type,
+    name: body.name,
+    account_number: body.account_number,
+    bank_code: body.bank_code,
+  };
+  if (body.currency) payload.currency = body.currency;
+  if (body.description) payload.description = body.description;
+  if (body.metadata) payload.metadata = body.metadata;
+
+  return paystackFetch<TransferRecipientResponse>("/transferrecipient", {
+    method: "POST",
+    body: payload,
+  });
+}
+
+export async function initiateTransfer(body: TransferRequest): Promise<TransferResponse> {
+  const payload: Record<string, unknown> = {
+    source: body.source,
+    amount: body.amount,
+    recipient: body.recipient,
+    reference: body.reference,
+  };
+  if (body.reason) payload.reason = body.reason;
+  if (body.currency) payload.currency = body.currency;
+
+  return paystackFetch<TransferResponse>("/transfer", {
+    method: "POST",
+    body: payload,
+  });
+}
+
+export async function requeryTransfer(reference: string): Promise<RequeryTransferResponse> {
+  return paystackFetch<RequeryTransferResponse>(`/transfer/verify/${reference}`);
+}
+
+export async function refundTransaction(body: RefundRequest): Promise<RefundResponse> {
+  return paystackFetch<RefundResponse>("/refund", {
+    method: "POST",
+    body,
+  });
+}

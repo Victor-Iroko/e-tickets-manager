@@ -1,0 +1,57 @@
+@import "tailwindcss";
+@import "@nuxt/ui";
+
+@theme {
+  --font-sans: "Montserrat", sans-serif;
+  --font-heading: "Bebas Neue", sans-serif;
+}
+
+@theme static {
+  --color-violet-50: #f6f6fb;
+  --color-violet-100: #eae9f6;
+  --color-violet-200: #cbc9e9;
+  --color-violet-300: #a6a1da;
+  --color-violet-400: #7972c7;
+  --color-violet-500: #534ab7;
+  --color-violet-600: #473f9c;
+  --color-violet-700: #3a3480;
+  --color-violet-800: #2a255c;
+  --color-violet-900: #191637;
+  --color-violet-950: #0c0b1b;
+
+  --color-coral-50: #fdf7f5;
+  --color-coral-100: #faebe6;
+  --color-coral-200: #f3cec1;
+  --color-coral-300: #eba993;
+  --color-coral-400: #e17e5e;
+  --color-coral-500: #d85a30;
+  --color-coral-600: #b84d29;
+  --color-coral-700: #973f22;
+  --color-coral-800: #6c2d18;
+  --color-coral-900: #411b0e;
+  --color-coral-950: #200e07;
+
+  --color-warm-white: #f5f4f2;
+}
+
+body {
+  background-color: var(--color-warm-white);
+  color: #1a1a1a;
+  margin: 0;
+  padding: 0;
+}
+
+h1,
+h2,
+h3,
+.font-heading {
+  font-family: var(--font-heading);
+  letter-spacing: 0.05em;
+}
+
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}

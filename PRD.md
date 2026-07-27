@@ -86,22 +86,23 @@ A centralized platform that handles the full ticket lifecycle — creation, sale
 
 ### Data Model Design
 
-- users
+- user
+  Managed by Better Auth.
   | Column | Type | Constraints |
   | -------------- | ------------ | ------------------------------------ |
   | id | UUID | PK |
   | name | VARCHAR(255) | NOT NULL |
   | email | VARCHAR(255) | NOT NULL, UNIQUE |
-  | password_hash | VARCHAR(255) | NULLABLE — null for OAuth-only users |
-  | role | ENUM | NOT NULL — `organizer`, `attendee` |
   | email_verified | BOOLEAN | NOT NULL, DEFAULT FALSE |
+  | image | TEXT | NULLABLE |
+  | role | ENUM | NOT NULL, DEFAULT `attendee` — `organizer`, `attendee` |
   | created_at | TIMESTAMP | NOT NULL, DEFAULT NOW() |
   | updated_at | TIMESTAMP | NOT NULL, DEFAULT NOW() |
 - events
   | Column | Type | Constraints |
   | ------------ | ------------ | -------------------------------------------------------------------------- |
   | id | UUID | PK |
-  | organizer_id | UUID | FK → users.id, NOT NULL |
+  | organizer_id | UUID | FK → user.id, NOT NULL |
   | title | VARCHAR(255) | NOT NULL |
   | description | TEXT | |
   | location | VARCHAR(255) | |
@@ -132,7 +133,7 @@ A centralized platform that handles the full ticket lifecycle — creation, sale
   | Column | Type | Constraints |
   | ------------ | ------------- | --------------------------------------------------------------------- |
   | id | UUID | PK |
-  | attendee_id | UUID | FK → users.id, NOT NULL |
+  | attendee_id | UUID | FK → user.id, NOT NULL |
   | event_id | UUID | FK → events.id, NOT NULL |
   | total_amount | NUMERIC(10,2) | NOT NULL, CHECK >= 0 |
   | status | ENUM | NOT NULL, DEFAULT `pending` — `pending`, `paid`, `failed`, `refunded` |
@@ -169,38 +170,52 @@ A centralized platform that handles the full ticket lifecycle — creation, sale
   | --------- | ------------ | ------------------------------------------- |
   | id | UUID | PK |
   | token | VARCHAR(255) | NOT NULL, UNIQUE — the session cookie value |
-  | userId | UUID | FK → users.id, NOT NULL |
-  | expiresAt | TIMESTAMP | NOT NULL |
-  | ipAddress | VARCHAR(255) | |
-  | userAgent | VARCHAR(255) | |
-  | createdAt | TIMESTAMP | NOT NULL |
-  | updatedAt | TIMESTAMP | NOT NULL |
+  | user_id | UUID | FK → user.id, NOT NULL |
+  | expires_at | TIMESTAMP | NOT NULL |
+  | ip_address | VARCHAR(255) | |
+  | user_agent | VARCHAR(255) | |
+  | created_at | TIMESTAMP | NOT NULL |
+  | updated_at | TIMESTAMP | NOT NULL |
 - accounts
-  Links users to OAuth providers. Managed by Better Auth.
+  Links users to auth providers and stores credentials. Managed by Better Auth.
   | Column | Type | Constraints |
-  | ----------------- | ------------ | -------------------------------------- |
+  | ------------------------- | ------------ | -------------------------------------- |
   | id | UUID | PK |
-  | userId | UUID | FK → users.id, NOT NULL |
-  | providerId | VARCHAR(255) | NOT NULL — e.g. `credential`, `google` |
-  | providerAccountId | VARCHAR(255) | NOT NULL — provider's user ID |
-  | accessToken | TEXT | |
-  | refreshToken | TEXT | |
-  | expiresAt | TIMESTAMP | |
-  | createdAt | TIMESTAMP | NOT NULL |
-  | updatedAt | TIMESTAMP | NOT NULL |
+  | user_id | UUID | FK → user.id, NOT NULL |
+  | provider_id | VARCHAR(255) | NOT NULL — e.g. `credential`, `google` |
+  | account_id | VARCHAR(255) | NOT NULL — provider's user ID |
+  | password | TEXT | NULLABLE — hashed password for credential auth |
+  | access_token | TEXT | |
+  | refresh_token | TEXT | |
+  | id_token | TEXT | |
+  | access_token_expires_at | TIMESTAMP | |
+  | refresh_token_expires_at | TIMESTAMP | |
+  | scope | TEXT | |
+  | created_at | TIMESTAMP | NOT NULL |
+  | updated_at | TIMESTAMP | NOT NULL |
+- verification
+  Stores tokens for verification & password resets. Managed by Better Auth.
+  | Column | Type | Constraints |
+  | ---------- | ------------ | -------------------- |
+  | id | UUID | PK |
+  | identifier | VARCHAR(255) | NOT NULL |
+  | value | TEXT | NOT NULL |
+  | expires_at | TIMESTAMP | NOT NULL |
+  | created_at | TIMESTAMP | NOT NULL, DEFAULT NOW() |
+  | updated_at | TIMESTAMP | NOT NULL, DEFAULT NOW() |
 
 ### Relationships
 
 ```jsx
-users ──[1:N]──► events              (organizer_id)
-users ──[1:N]──► orders              (attendee_id)
+user ──[1:N]──► events              (organizer_id)
+user ──[1:N]──► orders              (attendee_id)
 events ──[1:N]──► ticket_types
 events ──[1:N]──► orders
 events ──[1:N]──► scanner_sessions
 orders ──[1:N]──► tickets
 ticket_types ──[1:N]──► tickets
-users ──[1:N]──► sessions             (userId)
-users ──[1:N]──► accounts             (userId)
+user ──[1:N]──► sessions             (user_id)
+user ──[1:N]──► accounts             (user_id)
 scanner_sessions ──[0:N]──► tickets  (scanned_by_session_id, nullable)
 ```
 

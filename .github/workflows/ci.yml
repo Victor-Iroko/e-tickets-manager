@@ -1,0 +1,26 @@
+name: CI / CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  check-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Vite+ Toolchain
+        uses: voidzero-dev/setup-vp@v1
+
+      - name: Install dependencies
+        run: vp install
+
+      - name: Run Format, Lint, & Type Check
+        run: vp check
+
+      - name: Run Unit Tests
+        run: vp test

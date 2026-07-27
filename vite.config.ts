@@ -2,6 +2,7 @@ import { defineConfig } from "vite-plus";
 
 export default defineConfig({
   staged: {
+    "*.{js,ts,jsx,tsx,vue,mjs,cjs}": "eslint --fix",
     "*": "vp check --fix",
   },
   fmt: {},

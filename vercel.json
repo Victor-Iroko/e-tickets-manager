@@ -1,0 +1,6 @@
+{
+  "framework": "nuxtjs",
+  "buildCommand": "vp build",
+  "devCommand": "vp dev",
+  "installCommand": "vp install"
+}
